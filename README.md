@@ -49,10 +49,3 @@ Reason: New domain, suspicious name, urgent wording.
 Better not click/share until confirmed.
 
 
-## Contributing
-This is early and experimental.  
-Ideas, feedback, and pull requests are welcome.  
-
-
-## License
-MIT — free to use, modify, and share. Just give credit.
