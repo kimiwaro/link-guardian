@@ -12,8 +12,7 @@ Built because too many scam links are floating around in our chats.
 - Lets you copy a short WhatsApp‑friendly summary to warn others  
 
 ## Why I built this
-My own family almost got tricked by a fake bank link.  
-I wanted something **simple, free, and easy to use** — especially for parents and relatives who aren’t techy.  
+I wanted something **simple, free, and easy to use**, especially for parents and relatives who aren’t techy.  
 If it helps even one person avoid a scam, it’s worth it.
 
 ## Tech
