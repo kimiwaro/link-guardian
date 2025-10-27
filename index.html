@@ -7,15 +7,18 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>Paste a link to check if it’s real or fake</h2>
+  <main>
+    <h2>Paste a link to check if it’s real or fake</h2>
 
-  <form onsubmit="checkLink(); return false;">
-    <input type="text" id="urlInput" placeholder="https://example.com">
-    <button type="submit">Check Now</button>
-  </form>
+    <form onsubmit="checkLink(); return false;">
+      <label for="urlInput" class="visually-hidden">Link to check</label>
+      <input type="text" id="urlInput" placeholder="https://example.com">
+      <button type="submit">Check Now</button>
+    </form>
 
-  <div id="result"></div>
-  <button id="copyBtn" onclick="copyResult()">Copy Result</button>
+    <div id="result" class="result-card"></div>
+    <button id="copyBtn" onclick="copyResult()">Copy Result</button>
+  </main>
 
   <script src="script.js"></script>
 </body>
