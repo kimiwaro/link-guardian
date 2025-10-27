@@ -14,19 +14,20 @@
     </header>
 
     <form onsubmit="checkLink(); return false;">
-      <label for="urlInput" class="visually-hidden">Link to check</label>
-      <input type="text" id="urlInput" placeholder="https://example.com">
-      <button type="submit">Check Now</button>
+      <fieldset>
+        <label for="urlInput" class="visually-hidden">Link to check</label>
+        <input type="url" id="urlInput" placeholder="https://example.com" required>
+        <button type="submit">Check Now</button>
+      </fieldset>
     </form>
 
-    <div id="result" class="result-card"></div>
+    <div id="result" class="result-card" aria-live="polite"></div>
 
     <div class="actions">
       <button id="copyBtn" onclick="copyResult()">📋 Copy Result</button>
       <button id="shareBtn" onclick="shareToWhatsApp()">💬 Share to WhatsApp</button>
       <button id="nativeShareBtn" onclick="shareNative()">📲 Share...</button>
     </div>  
-
   </main>
 
   <footer>
