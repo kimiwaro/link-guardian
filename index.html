@@ -8,7 +8,10 @@
 </head>
 <body>
   <main>
-    <h2>Paste a link to check if it’s real or fake</h2>
+    <header>
+      <h1>🔒 Link Guardian</h1>
+      <p class="tagline">Paste a link. Know if it’s real. Share the truth.</p>
+    </header>
 
     <form onsubmit="checkLink(); return false;">
       <label for="urlInput" class="visually-hidden">Link to check</label>
@@ -17,8 +20,16 @@
     </form>
 
     <div id="result" class="result-card"></div>
-    <button id="copyBtn" onclick="copyResult()">Copy Result</button>
+
+    <div class="actions">
+      <button id="copyBtn" onclick="copyResult()">📋 Copy Result</button>
+      <button id="shareBtn" onclick="shareToWhatsApp()">💬 Share to WhatsApp</button>
+    </div>
   </main>
+
+  <footer>
+    <small>⚠️ This is an early tool. Always double‑check with official sources.</small>
+  </footer>
 
   <script src="script.js"></script>
 </body>
