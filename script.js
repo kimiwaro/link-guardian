@@ -2,6 +2,7 @@ function checkLink() {
   const url = document.getElementById('urlInput').value.trim();
   const resultDiv = document.getElementById('result');
   const copyBtn = document.getElementById('copyBtn');
+  const shareBtn = document.getElementById('shareBtn');
 
   // Reset classes
   resultDiv.className = "result-card";
@@ -10,6 +11,7 @@ function checkLink() {
     resultDiv.innerText = "❓ Please paste a link first.";
     resultDiv.classList.add("unknown");
     copyBtn.style.display = "none";
+    shareBtn.style.display = "none";
     return;
   }
 
@@ -33,13 +35,17 @@ function checkLink() {
   // Show verdict in the UI
   resultDiv.innerText = `${verdictEmoji} ${verdictText}\nReason: ${reason}`;
 
-  // Store full summary for copy
-  resultDiv.dataset.summary = 
+  // Store full summary for sharing
+  const summary = 
 `Checked: ${url}
 ${verdictEmoji} ${verdictText}
 Reason: ${reason}`;
 
-  copyBtn.style.display = "inline-block"; // show button
+  resultDiv.dataset.summary = summary;
+
+  // Show action buttons
+  copyBtn.style.display = "inline-block";
+  shareBtn.style.display = "inline-block";
 }
 
 function copyResult() {
@@ -47,6 +53,14 @@ function copyResult() {
   const summary = resultDiv.dataset.summary || resultDiv.innerText;
 
   navigator.clipboard.writeText(summary).then(() => {
-    alert("Result copied! Paste it into WhatsApp to share.");
+    alert("Result copied! Paste it anywhere.");
   });
+}
+
+function shareToWhatsApp() {
+  const resultDiv = document.getElementById('result');
+  const summary = resultDiv.dataset.summary || resultDiv.innerText;
+
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(summary)}`;
+  window.open(whatsappUrl, "_blank");
 }
