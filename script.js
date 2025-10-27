@@ -8,7 +8,9 @@ function checkLink() {
   resultDiv.className = "result-card";
 
   if (!url) {
-    resultDiv.innerText = "❓ Please paste a link first.";
+    resultDiv.innerHTML = `
+      <div class="verdict-header">❓ Please paste a link first.</div>
+    `;
     resultDiv.classList.add("unknown");
     copyBtn.style.display = "none";
     shareBtn.style.display = "none";
@@ -32,8 +34,11 @@ function checkLink() {
     resultDiv.classList.add("safe");
   }
 
-  // Show verdict in the UI
-  resultDiv.innerText = `${verdictEmoji} ${verdictText}\nReason: ${reason}`;
+  // Structured verdict card
+  resultDiv.innerHTML = `
+    <div class="verdict-header">${verdictEmoji} ${verdictText}</div>
+    <div class="verdict-reason">Reason: ${reason}</div>
+  `;
 
   // Store full summary for sharing
   const summary = 
