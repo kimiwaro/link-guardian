@@ -126,6 +126,16 @@ input:focus {
   background-color: #1da851;
 }
 
+#nativeShareBtn {
+  display: none;
+  background-color: #6c757d; /* neutral gray */
+  color: white;
+}
+#nativeShareBtn:hover {
+  background-color: #5a6268;
+}
+
+
 footer {
   margin-top: 30px;
   font-size: 0.8rem;
