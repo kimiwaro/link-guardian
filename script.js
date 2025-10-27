@@ -3,9 +3,12 @@ function checkLink() {
   const resultDiv = document.getElementById('result');
   const copyBtn = document.getElementById('copyBtn');
 
+  // Reset classes
+  resultDiv.className = "result-card";
+
   if (!url) {
     resultDiv.innerText = "❓ Please paste a link first.";
-    resultDiv.style.background = "#fff3cd";
+    resultDiv.classList.add("unknown");
     copyBtn.style.display = "none";
     return;
   }
@@ -19,12 +22,12 @@ function checkLink() {
     verdictEmoji = "⚠️";
     verdictText = "Likely Fake";
     reason = "Suspicious keywords or uncommon domain.";
-    resultDiv.style.background = "#f8d7da";
+    resultDiv.classList.add("fake");
   } else {
     verdictEmoji = "✅";
     verdictText = "Likely Genuine";
     reason = "No obvious suspicious patterns.";
-    resultDiv.style.background = "#d4edda";
+    resultDiv.classList.add("safe");
   }
 
   // Show verdict in the UI
