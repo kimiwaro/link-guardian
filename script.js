@@ -9,7 +9,7 @@ function checkLink() {
 
   if (!url) {
     resultDiv.innerHTML = `
-      <div class="verdict-header">❓ Please paste a link first.</div>
+      <div class="verdict-header">\u2753 Please paste a link first.</div>
     `;
     resultDiv.classList.add("unknown");
     copyBtn.style.display = "none";
@@ -23,12 +23,12 @@ function checkLink() {
 
   // Simple placeholder logic
   if (url.includes("secure") || url.includes("login") || url.includes(".xyz")) {
-    verdictEmoji = "⚠️";
+    verdictEmoji = "\u26A0\uFE0F"; // ⚠️
     verdictText = "Likely Fake";
     reason = "Suspicious keywords or uncommon domain.";
     resultDiv.classList.add("fake");
   } else {
-    verdictEmoji = "✅";
+    verdictEmoji = "\u2705"; // ✅
     verdictText = "Likely Genuine";
     reason = "No obvious suspicious patterns.";
     resultDiv.classList.add("safe");
