@@ -7,9 +7,14 @@ function checkLink() {
   // Reset classes
   resultDiv.className = "result-card";
 
-  if (!url) {
+  // ✅ Step 1: Validate URL
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(url);
+  } catch (e) {
     resultDiv.innerHTML = `
-      <div class="verdict-header">\u2753 Please paste a link first.</div>
+      <div class="verdict-header">\u2753 Invalid URL format.</div>
+      <div class="verdict-reason">Please enter a valid link (e.g. https://example.com).</div>
     `;
     resultDiv.classList.add("unknown");
     copyBtn.style.display = "none";
@@ -42,7 +47,7 @@ function checkLink() {
 
   // Store full summary for sharing
   const summary = 
-`Checked: ${url}
+`Checked: ${parsedUrl.href}
 ${verdictEmoji} ${verdictText}
 Reason: ${reason}`;
 
@@ -68,4 +73,19 @@ function shareToWhatsApp() {
 
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(summary)}`;
   window.open(whatsappUrl, "_blank");
+}
+
+// ✅ Step 2: Native Share API (mobile-friendly)
+function shareNative() {
+  const resultDiv = document.getElementById('result');
+  const summary = resultDiv.dataset.summary || resultDiv.innerText;
+
+  if (navigator.share) {
+    navigator.share({
+      title: "Link Guardian Result",
+      text: summary
+    }).catch(err => console.log("Share cancelled", err));
+  } else {
+    alert("Sharing not supported on this device.");
+  }
 }
