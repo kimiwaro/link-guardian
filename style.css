@@ -1,3 +1,4 @@
+/* Base layout */
 body {
   font-family: Arial, sans-serif;
   max-width: 500px;
@@ -5,6 +6,8 @@ body {
   text-align: center;
   padding: 0 15px; /* mobile breathing room */
   line-height: 1.5;
+  background-color: #fafafa;
+  color: #222;
 }
 
 header h1 {
@@ -17,6 +20,7 @@ header h1 {
   margin-bottom: 20px;
 }
 
+/* Form */
 form {
   display: flex;
   gap: 10px;
@@ -31,25 +35,39 @@ input {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  font-size: 0.95rem;
 }
 
+input:focus {
+  outline: 2px solid #007bff;
+  border-color: #007bff;
+}
+
+/* Buttons */
 button {
   padding: 10px 20px;
   cursor: pointer;
   border-radius: 4px;
   border: none;
   font-weight: bold;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  min-width: 120px;
 }
 
 button:hover {
   background-color: #f0f0f0;
 }
 
-input:focus {
+button:focus {
   outline: 2px solid #007bff;
+  outline-offset: 2px;
 }
 
+button:active {
+  transform: scale(0.97);
+}
+
+/* Result card */
 #result {
   padding: 15px;
   border-radius: 5px;
@@ -62,6 +80,7 @@ input:focus {
   font-weight: bold;
   text-align: left;
   white-space: pre-line; /* keeps line breaks */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
 /* Verdict states */
@@ -78,9 +97,9 @@ input:focus {
 }
 
 .unknown {
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
+  background-color: #fff8e1;
+  color: #5c4400;
+  border: 1px solid #ffe08a;
 }
 
 /* Structured verdict content */
@@ -104,6 +123,7 @@ input:focus {
   gap: 10px;
   justify-content: center;
   margin-top: 10px;
+  flex-wrap: wrap;
 }
 
 /* Copy Result button (blue) */
@@ -126,6 +146,7 @@ input:focus {
   background-color: #1da851;
 }
 
+/* Native Share button (gray) */
 #nativeShareBtn {
   display: none;
   background-color: #6c757d; /* neutral gray */
@@ -135,7 +156,7 @@ input:focus {
   background-color: #5a6268;
 }
 
-
+/* Footer */
 footer {
   margin-top: 30px;
   font-size: 0.8rem;
