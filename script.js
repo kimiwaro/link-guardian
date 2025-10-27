@@ -3,6 +3,7 @@ function checkLink() {
   const resultDiv = document.getElementById('result');
   const copyBtn = document.getElementById('copyBtn');
   const shareBtn = document.getElementById('shareBtn');
+  const nativeShareBtn = document.getElementById('nativeShareBtn'); // ✅ include this
 
   // Reset classes
   resultDiv.className = "result-card";
@@ -19,6 +20,7 @@ function checkLink() {
     resultDiv.classList.add("unknown");
     copyBtn.style.display = "none";
     shareBtn.style.display = "none";
+    nativeShareBtn.style.display = "none"; // hide if invalid
     return;
   }
 
@@ -56,6 +58,13 @@ Reason: ${reason}`;
   // Show action buttons
   copyBtn.style.display = "inline-block";
   shareBtn.style.display = "inline-block";
+
+  // ✅ Only show native share if supported
+  if (navigator.share) {
+    nativeShareBtn.style.display = "inline-block";
+  } else {
+    nativeShareBtn.style.display = "none";
+  }
 }
 
 function copyResult() {
@@ -86,6 +95,9 @@ function shareNative() {
       text: summary
     }).catch(err => console.log("Share cancelled", err));
   } else {
-    alert("Sharing not supported on this device.");
+    // Fallback: copy to clipboard
+    navigator.clipboard.writeText(summary).then(() => {
+      alert("Sharing not supported here. Result copied instead!");
+    });
   }
 }
