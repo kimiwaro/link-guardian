@@ -11,23 +11,39 @@ function checkLink() {
   }
 
   let verdictText = "";
+  let verdictEmoji = "";
+  let reason = "";
 
   // Simple placeholder logic
   if (url.includes("secure") || url.includes("login") || url.includes(".xyz")) {
-    verdictText = "⚠️ Likely Fake\nReason: Suspicious keywords or uncommon domain.";
+    verdictEmoji = "⚠️";
+    verdictText = "Likely Fake";
+    reason = "Suspicious keywords or uncommon domain.";
     resultDiv.style.background = "#f8d7da";
   } else {
-    verdictText = "✅ Likely Genuine\nReason: No obvious suspicious patterns.";
+    verdictEmoji = "✅";
+    verdictText = "Likely Genuine";
+    reason = "No obvious suspicious patterns.";
     resultDiv.style.background = "#d4edda";
   }
 
-  resultDiv.innerText = verdictText;
+  // Show verdict in the UI
+  resultDiv.innerText = `${verdictEmoji} ${verdictText}\nReason: ${reason}`;
+
+  // Store full summary for copy
+  resultDiv.dataset.summary = 
+`Checked: ${url}
+${verdictEmoji} ${verdictText}
+Reason: ${reason}`;
+
   copyBtn.style.display = "inline-block"; // show button
 }
 
 function copyResult() {
-  const resultText = document.getElementById('result').innerText;
-  navigator.clipboard.writeText(resultText).then(() => {
-    alert("Result copied! You can now paste it into WhatsApp.");
+  const resultDiv = document.getElementById('result');
+  const summary = resultDiv.dataset.summary || resultDiv.innerText;
+
+  navigator.clipboard.writeText(summary).then(() => {
+    alert("Result copied! Paste it into WhatsApp to share.");
   });
 }
