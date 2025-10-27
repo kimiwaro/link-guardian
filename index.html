@@ -2,18 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Link Guardian</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h2>Paste a link to check if it’s real or fake</h2>
-  <input type="text" id="urlInput" placeholder="https://example.com">
-  <button onclick="checkLink()">Check Now</button>
 
-<div id="result" style="margin-top:20px; font-weight:bold;"></div>
-<button id="copyBtn" style="display:none; margin-top:10px;" onclick="copyResult()">
-  Copy Result
-</button>
+  <form onsubmit="checkLink(); return false;">
+    <input type="text" id="urlInput" placeholder="https://example.com">
+    <button type="submit">Check Now</button>
+  </form>
+
+  <div id="result"></div>
+  <button id="copyBtn" onclick="copyResult()">Copy Result</button>
 
   <script src="script.js"></script>
 </body>
