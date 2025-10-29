@@ -20,18 +20,16 @@ header h1 {
   margin-bottom: 20px;
 }
 
-/* Form */
+/* Form - stacked layout */
 form {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;   /* stack input and button */
+  gap: 12px;                /* vertical spacing */
+  align-items: stretch;     /* make input & button same width */
   margin-bottom: 15px;
 }
 
 input {
-  flex: 1;
-  min-width: 250px;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
