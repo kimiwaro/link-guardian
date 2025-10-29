@@ -21,21 +21,21 @@ header h1 {
 }
 
 /* Form - stacked layout */
-
 form {
   display: flex;
   flex-direction: column;   /* stack input and button */
-  gap: 0;                   /* remove gap, we’ll control spacing manually */
+  gap: 0;
   align-items: stretch;
   margin-bottom: 15px;
 }
 
 input {
+  width: 100%;              /* ✅ fully responsive */
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 0.95rem;
-  margin-bottom: 12px; /* ✅ add breathing room below input */
+  margin-bottom: 14px;      /* slightly more breathing room */
 }
 
 input:focus {
@@ -79,8 +79,17 @@ button:active {
   border-radius: 6px;
   font-weight: bold;
   text-align: left;
-  white-space: pre-line; /* keeps line breaks */
+  white-space: pre-line;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+
+  /* ✅ fade-in effect */
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.result-card.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Verdict states */
@@ -139,7 +148,7 @@ button:active {
 /* WhatsApp Share button (green) */
 #shareBtn {
   display: none;
-  background-color: #25d366; /* WhatsApp green */
+  background-color: #25d366;
   color: white;
 }
 #shareBtn:hover {
@@ -149,11 +158,47 @@ button:active {
 /* Native Share button (gray) */
 #nativeShareBtn {
   display: none;
-  background-color: #6c757d; /* neutral gray */
+  background-color: #6c757d;
   color: white;
 }
 #nativeShareBtn:hover {
   background-color: #5a6268;
+}
+
+/* Loading shimmer */
+.loading {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 37%,
+    #f0f0f0 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.2s ease infinite; /* ✅ slightly faster */
+  border-radius: 6px;
+  height: 60px;
+  margin-top: 20px;
+  position: relative;
+}
+
+.loading::after {
+  content: "🕵️ Checking...";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
 }
 
 /* Footer */
