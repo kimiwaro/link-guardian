@@ -70,6 +70,16 @@ input:focus {
   background-color: #ffc107; /* yellow */
 }
 
+.gauge {
+  width: 200px;
+  height: 100px;
+  display: block;
+  margin: 10px auto;
+}
+#needle {
+  transition: transform 0.6s ease-out;
+}
+
 
 /* Buttons */
 button {
