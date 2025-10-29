@@ -104,3 +104,39 @@ Confidence: ${confidence}%`;
     }
   }, 1200); // 1.2s shimmer before verdict
 }
+
+// ✅ Copy Result
+function copyResult() {
+  const resultDiv = document.getElementById('result');
+  const summary = resultDiv.dataset.summary || resultDiv.innerText;
+
+  navigator.clipboard.writeText(summary).then(() => {
+    alert("Result copied! Paste it anywhere.");
+  });
+}
+
+// ✅ Share to WhatsApp
+function shareToWhatsApp() {
+  const resultDiv = document.getElementById('result');
+  const summary = resultDiv.dataset.summary || resultDiv.innerText;
+
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(summary)}`;
+  window.open(whatsappUrl, "_blank");
+}
+
+// ✅ Native Share API (mobile-friendly)
+function shareNative() {
+  const resultDiv = document.getElementById('result');
+  const summary = resultDiv.dataset.summary || resultDiv.innerText;
+
+  if (navigator.share) {
+    navigator.share({
+      title: "Link Guardian Result",
+      text: summary
+    }).catch(err => console.log("Share cancelled", err));
+  } else {
+    navigator.clipboard.writeText(summary).then(() => {
+      alert("Sharing not supported here. Result copied instead!");
+    });
+  }
+}
