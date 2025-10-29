@@ -51,20 +51,38 @@ function checkLink() {
       confidence = 80;
     }
 
-    // Structured verdict card with confidence bar
+    // Structured verdict card with SVG gauge
     resultDiv.innerHTML = `
       <div class="verdict-header">${verdictEmoji} ${verdictText}</div>
       <div class="verdict-reason">Reason: ${reason}</div>
       <div class="confidence-label">Confidence: ${confidence}%</div>
-      <div class="confidence-bar">
-        <div class="confidence-fill ${resultDiv.classList.contains("safe") ? "safe" : resultDiv.classList.contains("fake") ? "fake" : "unknown"}"></div>
-      </div>
+      <svg class="gauge" viewBox="0 0 200 100">
+        <!-- Background arc -->
+        <path d="M10 100 A90 90 0 0 1 190 100"
+              fill="none" stroke="#eee" stroke-width="20"/>
+        <!-- Dynamic arc -->
+        <path id="gauge-fill"
+              d="M10 100 A90 90 0 0 1 190 100"
+              fill="none" stroke="green" stroke-width="20"
+              stroke-dasharray="0 283"/>
+        <!-- Needle -->
+        <line id="needle" x1="100" y1="100" x2="100" y2="20"
+              stroke="brown" stroke-width="4" stroke-linecap="round"
+              transform="rotate(-90,100,100)"/>
+        <!-- Center cover -->
+        <circle cx="100" cy="100" r="8" fill="#333"/>
+      </svg>
     `;
 
-    // Animate confidence fill
-    const fill = resultDiv.querySelector(".confidence-fill");
+    // Animate gauge
+    const fill = resultDiv.querySelector("#gauge-fill");
+    const needle = resultDiv.querySelector("#needle");
+    const maxArc = 283; // semicircle length
+    const arc = (confidence / 100) * maxArc;
     setTimeout(() => {
-      fill.style.width = confidence + "%";
+      fill.setAttribute("stroke-dasharray", `${arc} ${maxArc - arc}`);
+      const angle = -90 + (confidence / 100) * 180;
+      needle.setAttribute("transform", `rotate(${angle},100,100)`);
     }, 100);
 
     // Store full summary for sharing
@@ -85,39 +103,4 @@ Confidence: ${confidence}%`;
       nativeShareBtn.style.display = "inline-block";
     }
   }, 1200); // 1.2s shimmer before verdict
-}
-
-function copyResult() {
-  const resultDiv = document.getElementById('result');
-  const summary = resultDiv.dataset.summary || resultDiv.innerText;
-
-  navigator.clipboard.writeText(summary).then(() => {
-    alert("Result copied! Paste it anywhere.");
-  });
-}
-
-function shareToWhatsApp() {
-  const resultDiv = document.getElementById('result');
-  const summary = resultDiv.dataset.summary || resultDiv.innerText;
-
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(summary)}`;
-  window.open(whatsappUrl, "_blank");
-}
-
-// ✅ Step 2: Native Share API (mobile-friendly)
-function shareNative() {
-  const resultDiv = document.getElementById('result');
-  const summary = resultDiv.dataset.summary || resultDiv.innerText;
-
-  if (navigator.share) {
-    navigator.share({
-      title: "Link Guardian Result",
-      text: summary
-    }).catch(err => console.log("Share cancelled", err));
-  } else {
-    // Fallback: copy to clipboard
-    navigator.clipboard.writeText(summary).then(() => {
-      alert("Sharing not supported here. Result copied instead!");
-    });
-  }
 }
