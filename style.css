@@ -43,6 +43,34 @@ input:focus {
   border-color: #007bff;
 }
 
+/* Confidence meter container */
+.confidence-bar {
+  margin-top: 10px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #eee;
+  overflow: hidden;
+}
+
+/* The actual fill */
+.confidence-fill {
+  height: 100%;
+  width: 0;
+  transition: width 0.6s ease;
+}
+
+/* Colors for different verdicts */
+.confidence-fill.safe {
+  background-color: #28a745; /* green */
+}
+.confidence-fill.fake {
+  background-color: #dc3545; /* red */
+}
+.confidence-fill.unknown {
+  background-color: #ffc107; /* yellow */
+}
+
+
 /* Buttons */
 button {
   padding: 12px 20px;
