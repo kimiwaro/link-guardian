@@ -105,7 +105,7 @@ button:active {
   white-space: pre-line;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 
-  /* ✅ fade-in effect */
+  /* ✅ fade-in effect for the whole card */
   opacity: 0;
   transform: translateY(5px);
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -114,6 +114,23 @@ button:active {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Staggered reveal for inner elements */
+.fade-step {
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.fade-step.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Delay each step */
+.fade-step:nth-of-type(1) { transition-delay: 0.1s; }
+.fade-step:nth-of-type(2) { transition-delay: 0.3s; }
+.fade-step:nth-of-type(3) { transition-delay: 0.5s; }
+.fade-step:nth-of-type(4) { transition-delay: 0.7s; }
 
 /* Verdict states */
 .safe {
@@ -148,6 +165,7 @@ button:active {
   font-size: 0.9rem;
   font-weight: normal;
 }
+
 
 /* Action buttons container */
 .actions {
