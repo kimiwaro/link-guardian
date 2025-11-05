@@ -44,24 +44,41 @@ function checkLink() {
 
     resultDiv.classList.add(verdictClass);
 
-    // ✅ Step 3: Verdict card with staggered fade-steps
-    resultDiv.innerHTML = `
-      <div class="verdict-header fade-step">${verdictEmoji} ${verdictText}</div>
-      <div class="verdict-reason fade-step">Reason: ${reason}</div>
-      <div class="confidence-label fade-step">Confidence: ${confidence}%</div>
-      <svg class="gauge fade-step" viewBox="0 0 200 110" role="img" aria-label="Confidence gauge">
-        <path d="M10 100 A90 90 0 0 1 190 100"
-              fill="none" stroke="#eee" stroke-width="20"/>
-        <path class="gauge-fill"
-              d="M10 100 A90 90 0 0 1 190 100"
-              fill="none" stroke-width="20"
-              stroke-dasharray="0 283"/>
-        <line class="needle" x1="100" y1="100" x2="100" y2="20"
-              stroke="brown" stroke-width="4" stroke-linecap="round"
-              transform="rotate(-90,100,100)"/>
-        <circle cx="100" cy="100" r="8" fill="#333"/>
-      </svg>
-    `;
+  // ✅ Step 3: Verdict card with staggered fade-steps
+resultDiv.innerHTML = `
+  <div class="verdict-header fade-step">${verdictEmoji} ${verdictText}</div>
+  <div class="verdict-reason fade-step">Reason: ${reason}</div>
+  <div class="confidence-label fade-step">Confidence: ${confidence}%</div>
+  <svg class="gauge fade-step" viewBox="0 0 200 110" role="img" aria-label="Confidence gauge">
+    <!-- Background arc -->
+    <path d="M10 100 A90 90 0 0 1 190 100"
+          fill="none" stroke="#eee" stroke-width="20"/>
+
+    <!-- Dynamic arc -->
+    <path class="gauge-fill"
+          d="M10 100 A90 90 0 0 1 190 100"
+          fill="none" stroke-width="20"
+          stroke-dasharray="0 283"/>
+
+    <!-- Tick marks -->
+    <line x1="100" y1="100" x2="100" y2="80" stroke="#666" stroke-width="2"/>
+    <line x1="55" y1="95" x2="45" y2="75" stroke="#666" stroke-width="2"/>
+    <line x1="145" y1="95" x2="155" y2="75" stroke="#666" stroke-width="2"/>
+
+    <!-- Labels -->
+    <text x="40" y="70" font-size="10" fill="#444">0%</text>
+    <text x="95" y="65" font-size="10" fill="#444">50%</text>
+    <text x="150" y="70" font-size="10" fill="#444">100%</text>
+
+    <!-- Needle -->
+    <line class="needle" x1="100" y1="100" x2="100" y2="20"
+          stroke="brown" stroke-width="4" stroke-linecap="round"
+          transform="rotate(-90,100,100)"/>
+
+    <!-- Center cover -->
+    <circle cx="100" cy="100" r="8" fill="#333"/>
+  </svg>
+`;
 
     // ✅ Step 4: Animate gauge
     const fill = resultDiv.querySelector(".gauge-fill");
