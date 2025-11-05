@@ -7,11 +7,7 @@ function checkLink() {
 
   // Reset
   resultDiv.className = "result-card";
-  copyBtn.style.display = "none";
-  shareBtn.style.display = "none";
-  nativeShareBtn.style.display = "none";
-
-  // Show shimmer while "checking"
+  copyBtn.style.display = shareBtn.style.display = nativeShareBtn.style.display = "none";
   resultDiv.innerHTML = "";
   resultDiv.classList.add("loading");
 
@@ -22,80 +18,68 @@ function checkLink() {
     let parsedUrl;
     try {
       parsedUrl = new URL(url);
-    } catch (e) {
+    } catch {
       resultDiv.innerHTML = `
-        <div class="verdict-header">❓ Invalid URL format.</div>
-        <div class="verdict-reason">Please enter a valid link (e.g. https://example.com).</div>
+        <div class="verdict-header fade-step">❓ Invalid URL format.</div>
+        <div class="verdict-reason fade-step">Please enter a valid link (e.g. https://example.com).</div>
       `;
       resultDiv.classList.add("unknown", "show");
       return;
     }
 
-    let verdictText = "";
-    let verdictEmoji = "";
-    let reason = "";
-    let confidence = 50; // default
-    let verdictClass = "unknown";
+    // ✅ Step 2: Verdict logic
+    let verdictClass = "safe";
+    let verdictEmoji = "✅";
+    let verdictText = "Likely Genuine";
+    let reason = "No obvious suspicious patterns.";
+    let confidence = 80;
 
-    // Simple placeholder logic
     if (url.includes("secure") || url.includes("login") || url.includes(".xyz")) {
+      verdictClass = "fake";
       verdictEmoji = "⚠️";
       verdictText = "Likely Fake";
       reason = "Suspicious keywords or uncommon domain.";
-      verdictClass = "fake";
       confidence = 30;
-    } else {
-      verdictEmoji = "✅";
-      verdictText = "Likely Genuine";
-      reason = "No obvious suspicious patterns.";
-      verdictClass = "safe";
-      confidence = 80;
     }
 
     resultDiv.classList.add(verdictClass);
 
-    // Structured verdict card with SVG gauge
+    // ✅ Step 3: Verdict card with staggered fade-steps
     resultDiv.innerHTML = `
-      <div class="verdict-header">${verdictEmoji} ${verdictText}</div>
-      <div class="verdict-reason">Reason: ${reason}</div>
-      <div class="confidence-label">Confidence: ${confidence}%</div>
-      <svg class="gauge" viewBox="0 0 200 110" role="img" aria-label="Confidence gauge">
-        <!-- Background arc -->
+      <div class="verdict-header fade-step">${verdictEmoji} ${verdictText}</div>
+      <div class="verdict-reason fade-step">Reason: ${reason}</div>
+      <div class="confidence-label fade-step">Confidence: ${confidence}%</div>
+      <svg class="gauge fade-step" viewBox="0 0 200 110" role="img" aria-label="Confidence gauge">
         <path d="M10 100 A90 90 0 0 1 190 100"
               fill="none" stroke="#eee" stroke-width="20"/>
-        <!-- Dynamic arc -->
-        <path id="gauge-fill"
+        <path class="gauge-fill"
               d="M10 100 A90 90 0 0 1 190 100"
-              fill="none" stroke="green" stroke-width="20"
+              fill="none" stroke-width="20"
               stroke-dasharray="0 283"/>
-        <!-- Needle -->
-        <line id="needle" x1="100" y1="100" x2="100" y2="20"
+        <line class="needle" x1="100" y1="100" x2="100" y2="20"
               stroke="brown" stroke-width="4" stroke-linecap="round"
               transform="rotate(-90,100,100)"/>
-        <!-- Center cover -->
         <circle cx="100" cy="100" r="8" fill="#333"/>
       </svg>
     `;
 
-    // Animate gauge
-    const fill = resultDiv.querySelector("#gauge-fill");
-    const needle = resultDiv.querySelector("#needle");
-    const maxArc = 283; // semicircle length
+    // ✅ Step 4: Animate gauge
+    const fill = resultDiv.querySelector(".gauge-fill");
+    const needle = resultDiv.querySelector(".needle");
+    const maxArc = 283;
     const arc = (confidence / 100) * maxArc;
 
-    // Pick color based on verdict
-    let strokeColor = "orange";
-    if (verdictClass === "safe") strokeColor = "green";
-    if (verdictClass === "fake") strokeColor = "red";
+    let strokeColor = verdictClass === "safe" ? "green" :
+                      verdictClass === "fake" ? "red" : "orange";
 
     setTimeout(() => {
       fill.setAttribute("stroke-dasharray", `${arc} ${maxArc - arc}`);
       fill.setAttribute("stroke", strokeColor);
       const angle = -90 + (confidence / 100) * 180;
       needle.setAttribute("transform", `rotate(${angle},100,100)`);
-    }, 100);
+    }, 300); // start after fade-in
 
-    // Store full summary for sharing
+    // ✅ Step 5: Store summary
     const summary = 
 `Checked: ${parsedUrl.href}
 ${verdictEmoji} ${verdictText}
@@ -103,16 +87,16 @@ Reason: ${reason}
 Confidence: ${confidence}%`;
     resultDiv.dataset.summary = summary;
 
-    // Trigger fade-in
+    // ✅ Step 6: Trigger fade-in
     resultDiv.classList.add("show");
+    resultDiv.querySelectorAll(".fade-step").forEach(el => {
+      requestAnimationFrame(() => el.classList.add("show"));
+    });
 
-    // Show action buttons
-    copyBtn.style.display = "inline-block";
-    shareBtn.style.display = "inline-block";
-    if (navigator.share) {
-      nativeShareBtn.style.display = "inline-block";
-    }
-  }, 1200); // 1.2s shimmer before verdict
+    // ✅ Step 7: Show action buttons
+    copyBtn.style.display = shareBtn.style.display = "inline-block";
+    if (navigator.share) nativeShareBtn.style.display = "inline-block";
+  }, 1200);
 }
 
 
