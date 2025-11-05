@@ -51,20 +51,34 @@ input:focus {
   display: block;
   margin: 15px auto;
 }
-#needle {
+
+/* Needle animation */
+.needle {
   transition: transform 0.8s cubic-bezier(0.4, 2.3, 0.3, 1); /* springy ease */
+  transform-origin: 100px 100px; /* ensure rotation pivots correctly */
 }
 
-/* Optional tick/label styling */
+/* Tick/label styling */
 .gauge text {
   font-size: 10px;
   fill: #444;
   user-select: none;
+  pointer-events: none; /* prevent accidental selection */
 }
 .gauge line {
   stroke: #666;
   stroke-width: 2;
 }
+
+/* Verdict-based theming for gauge arc + labels */
+.safe .gauge-fill { stroke: #28a745; }   /* green */
+.fake .gauge-fill { stroke: #dc3545; }   /* red */
+.unknown .gauge-fill { stroke: #ffc107; }/* yellow */
+
+.safe .gauge text { fill: #155724; }
+.fake .gauge text { fill: #721c24; }
+.unknown .gauge text { fill: #5c4400; }
+
 
 /* Buttons */
 button {
