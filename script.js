@@ -35,28 +35,31 @@ function checkLink() {
     let verdictEmoji = "";
     let reason = "";
     let confidence = 50; // default
+    let verdictClass = "unknown";
 
     // Simple placeholder logic
     if (url.includes("secure") || url.includes("login") || url.includes(".xyz")) {
       verdictEmoji = "⚠️";
       verdictText = "Likely Fake";
       reason = "Suspicious keywords or uncommon domain.";
-      resultDiv.classList.add("fake");
+      verdictClass = "fake";
       confidence = 30;
     } else {
       verdictEmoji = "✅";
       verdictText = "Likely Genuine";
       reason = "No obvious suspicious patterns.";
-      resultDiv.classList.add("safe");
+      verdictClass = "safe";
       confidence = 80;
     }
+
+    resultDiv.classList.add(verdictClass);
 
     // Structured verdict card with SVG gauge
     resultDiv.innerHTML = `
       <div class="verdict-header">${verdictEmoji} ${verdictText}</div>
       <div class="verdict-reason">Reason: ${reason}</div>
       <div class="confidence-label">Confidence: ${confidence}%</div>
-      <svg class="gauge" viewBox="0 0 200 100">
+      <svg class="gauge" viewBox="0 0 200 110" role="img" aria-label="Confidence gauge">
         <!-- Background arc -->
         <path d="M10 100 A90 90 0 0 1 190 100"
               fill="none" stroke="#eee" stroke-width="20"/>
@@ -79,8 +82,15 @@ function checkLink() {
     const needle = resultDiv.querySelector("#needle");
     const maxArc = 283; // semicircle length
     const arc = (confidence / 100) * maxArc;
+
+    // Pick color based on verdict
+    let strokeColor = "orange";
+    if (verdictClass === "safe") strokeColor = "green";
+    if (verdictClass === "fake") strokeColor = "red";
+
     setTimeout(() => {
       fill.setAttribute("stroke-dasharray", `${arc} ${maxArc - arc}`);
+      fill.setAttribute("stroke", strokeColor);
       const angle = -90 + (confidence / 100) * 180;
       needle.setAttribute("transform", `rotate(${angle},100,100)`);
     }, 100);
@@ -104,6 +114,7 @@ Confidence: ${confidence}%`;
     }
   }, 1200); // 1.2s shimmer before verdict
 }
+
 
 // ✅ Copy Result
 function copyResult() {
