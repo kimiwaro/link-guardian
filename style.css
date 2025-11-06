@@ -58,27 +58,27 @@ input:focus {
   transform-origin: 100px 100px; /* ensure rotation pivots correctly */
 }
 
-/* Tick/label styling */
-.gauge text {
-  font-size: 10px;
-  fill: #444;
-  user-select: none;
-  pointer-events: none; /* prevent accidental selection */
-}
-.gauge line {
-  stroke: #666;
-  stroke-width: 2;
+/* Arc fill animation */
+.gauge-fill {
+  transition: stroke-dasharray 0.8s ease, stroke 0.3s ease;
 }
 
-/* Verdict-based theming for gauge arc + labels */
-.safe .gauge-fill { stroke: #28a745; }   /* green */
-.fake .gauge-fill { stroke: #dc3545; }   /* red */
-.unknown .gauge-fill { stroke: #ffc107; }/* yellow */
+/* Confidence label styling */
+.confidence-label {
+  font-size: 0.95rem;
+  font-weight: bold;
+  margin-top: 6px;
+  text-align: center;
+}
 
-.safe .gauge text { fill: #155724; }
-.fake .gauge text { fill: #721c24; }
-.unknown .gauge text { fill: #5c4400; }
+/* Verdict-based theming for gauge arc + confidence text */
+.safe .gauge-fill { stroke: #28a745; }
+.fake .gauge-fill { stroke: #dc3545; }
+.unknown .gauge-fill { stroke: #ffc107; }
 
+.safe .confidence-label { color: #28a745; }
+.fake .confidence-label { color: #dc3545; }
+.unknown .confidence-label { color: #ffc107; }
 
 /* Buttons */
 button {
@@ -179,7 +179,6 @@ button:active {
   font-size: 0.9rem;
   font-weight: normal;
 }
-
 
 /* Action buttons container */
 .actions {
