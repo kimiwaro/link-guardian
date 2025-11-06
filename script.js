@@ -70,53 +70,62 @@ function checkLink() {
       </svg>
     `;
 
-    // ✅ Step 4: Animate gauge + confidence number with easing + bounce
-    const fill = resultDiv.querySelector(".gauge-fill");
-    const needle = resultDiv.querySelector(".needle");
-    const label = resultDiv.querySelector(".confidence-label");
-    const maxArc = 283;
-    const arc = (confidence / 100) * maxArc;
+// ✅ Step 4: Animate gauge + confidence number with easing + controlled bounce
+const fill = resultDiv.querySelector(".gauge-fill");
+const needle = resultDiv.querySelector(".needle");
+const label = resultDiv.querySelector(".confidence-label");
+const maxArc = 283;
+const arc = (confidence / 100) * maxArc;
 
-    let strokeColor = verdictClass === "safe" ? "green" :
-                      verdictClass === "fake" ? "red" : "orange";
+let strokeColor = verdictClass === "safe" ? "green" :
+                  verdictClass === "fake" ? "red" : "orange";
 
-    const duration = 1200;
-    const startTime = performance.now();
+const duration = 1200;
+const startTime = performance.now();
 
-    setTimeout(() => {
-      function animate(time) {
-        const elapsed = time - startTime;
-        const progress = Math.min(elapsed / duration, 1);
+setTimeout(() => {
+  function animate(time) {
+    const elapsed = time - startTime;
+    const progress = Math.min(elapsed / duration, 1);
 
-        // Ease-out curve
-        const eased = 1 - Math.pow(1 - progress, 3);
+    // Ease-out curve
+    const eased = 1 - Math.pow(1 - progress, 3);
 
-        // Arc fill
-        const currentArc = arc * eased;
-        fill.setAttribute("stroke-dasharray", `${currentArc} ${maxArc - currentArc}`);
-        fill.setAttribute("stroke", strokeColor);
+    // Arc fill
+    const currentArc = arc * eased;
+    fill.setAttribute("stroke-dasharray", `${currentArc} ${maxArc - currentArc}`);
+    fill.setAttribute("stroke", strokeColor);
 
-        // Needle rotation with bounce
-        const targetAngle = -90 + (confidence / 100) * 180;
-        const overshoot = 5; // degrees of bounce
-        const bounce = Math.sin(progress * Math.PI) * overshoot * (1 - progress);
-        const angle = targetAngle * eased + bounce;
-        needle.setAttribute("transform", `rotate(${angle},100,100)`);
+    // Needle rotation with controlled bounce
+    const targetAngle = -90 + (confidence / 100) * 180;
+    const overshoot = 3; // smaller bounce
+    const bounceFactor = Math.sin(progress * 2 * Math.PI) * (1 - progress) * 0.5;
+    let angle = targetAngle * eased + overshoot * bounceFactor;
 
-        // Confidence number
-        const currentValue = Math.round(confidence * eased);
-        label.textContent = `Confidence: ${currentValue}%`;
+    // Clamp angle to dial bounds (-90 to +90)
+    angle = Math.max(-90, Math.min(90, angle));
 
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        } else {
-          // Final settle
-          needle.setAttribute("transform", `rotate(${targetAngle},100,100)`);
-          label.textContent = `Confidence: ${confidence}%`;
-        }
-      }
+    needle.setAttribute("transform", `rotate(${angle},100,100)`);
+
+    // Confidence number
+    const currentValue = Math.round(confidence * eased);
+    label.textContent = `Confidence: ${currentValue}%`;
+
+    if (progress < 1) {
       requestAnimationFrame(animate);
-    }, 300); // start after fade-in
+    } else {
+      // Final settle
+      needle.setAttribute("transform", `rotate(${targetAngle},100,100)`);
+      label.textContent = `Confidence: ${confidence}%`;
+
+      // 🎉 Pulse effect on finish
+      label.classList.add("pulse");
+      setTimeout(() => label.classList.remove("pulse"), 600);
+    }
+  }
+  requestAnimationFrame(animate);
+}, 300); // start after fade-in
+
 
     // ✅ Step 5: Store summary
     const summary = 
