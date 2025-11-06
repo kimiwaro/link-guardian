@@ -44,56 +44,78 @@ function checkLink() {
 
     resultDiv.classList.add(verdictClass);
 
-  // ✅ Step 3: Verdict card with staggered fade-steps
-resultDiv.innerHTML = `
-  <div class="verdict-header fade-step">${verdictEmoji} ${verdictText}</div>
-  <div class="verdict-reason fade-step">Reason: ${reason}</div>
-  <div class="confidence-label fade-step">Confidence: ${confidence}%</div>
-  <svg class="gauge fade-step" viewBox="0 0 200 110" role="img" aria-label="Confidence gauge">
-    <!-- Background arc -->
-    <path d="M10 100 A90 90 0 0 1 190 100"
-          fill="none" stroke="#eee" stroke-width="20"/>
+    // ✅ Step 3: Verdict card with staggered fade-steps
+    resultDiv.innerHTML = `
+      <div class="verdict-header fade-step">${verdictEmoji} ${verdictText}</div>
+      <div class="verdict-reason fade-step">Reason: ${reason}</div>
+      <div class="confidence-label fade-step">Confidence: ${confidence}%</div>
+      <svg class="gauge fade-step" viewBox="0 0 200 110" role="img" aria-label="Confidence gauge">
+        <!-- Background arc -->
+        <path d="M10 100 A90 90 0 0 1 190 100"
+              fill="none" stroke="#eee" stroke-width="20"/>
 
-    <!-- Dynamic arc -->
-    <path class="gauge-fill"
-          d="M10 100 A90 90 0 0 1 190 100"
-          fill="none" stroke-width="20"
-          stroke-dasharray="0 283"/>
+        <!-- Dynamic arc -->
+        <path class="gauge-fill"
+              d="M10 100 A90 90 0 0 1 190 100"
+              fill="none" stroke-width="20"
+              stroke-dasharray="0 283"/>
 
-    <!-- Tick marks -->
-    <line x1="100" y1="100" x2="100" y2="80" stroke="#666" stroke-width="2"/>
-    <line x1="55" y1="95" x2="45" y2="75" stroke="#666" stroke-width="2"/>
-    <line x1="145" y1="95" x2="155" y2="75" stroke="#666" stroke-width="2"/>
+        <!-- Needle -->
+        <line class="needle" x1="100" y1="100" x2="100" y2="20"
+              stroke="brown" stroke-width="4" stroke-linecap="round"
+              transform="rotate(-90,100,100)"/>
 
-    <!-- Labels -->
-    <text x="40" y="70" font-size="10" fill="#444">0%</text>
-    <text x="95" y="65" font-size="10" fill="#444">50%</text>
-    <text x="150" y="70" font-size="10" fill="#444">100%</text>
+        <!-- Center cover -->
+        <circle cx="100" cy="100" r="8" fill="#333"/>
+      </svg>
+    `;
 
-    <!-- Needle -->
-    <line class="needle" x1="100" y1="100" x2="100" y2="20"
-          stroke="brown" stroke-width="4" stroke-linecap="round"
-          transform="rotate(-90,100,100)"/>
-
-    <!-- Center cover -->
-    <circle cx="100" cy="100" r="8" fill="#333"/>
-  </svg>
-`;
-
-    // ✅ Step 4: Animate gauge
+    // ✅ Step 4: Animate gauge + confidence number with easing + bounce
     const fill = resultDiv.querySelector(".gauge-fill");
     const needle = resultDiv.querySelector(".needle");
+    const label = resultDiv.querySelector(".confidence-label");
     const maxArc = 283;
     const arc = (confidence / 100) * maxArc;
 
     let strokeColor = verdictClass === "safe" ? "green" :
                       verdictClass === "fake" ? "red" : "orange";
 
+    const duration = 1200;
+    const startTime = performance.now();
+
     setTimeout(() => {
-      fill.setAttribute("stroke-dasharray", `${arc} ${maxArc - arc}`);
-      fill.setAttribute("stroke", strokeColor);
-      const angle = -90 + (confidence / 100) * 180;
-      needle.setAttribute("transform", `rotate(${angle},100,100)`);
+      function animate(time) {
+        const elapsed = time - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Ease-out curve
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        // Arc fill
+        const currentArc = arc * eased;
+        fill.setAttribute("stroke-dasharray", `${currentArc} ${maxArc - currentArc}`);
+        fill.setAttribute("stroke", strokeColor);
+
+        // Needle rotation with bounce
+        const targetAngle = -90 + (confidence / 100) * 180;
+        const overshoot = 5; // degrees of bounce
+        const bounce = Math.sin(progress * Math.PI) * overshoot * (1 - progress);
+        const angle = targetAngle * eased + bounce;
+        needle.setAttribute("transform", `rotate(${angle},100,100)`);
+
+        // Confidence number
+        const currentValue = Math.round(confidence * eased);
+        label.textContent = `Confidence: ${currentValue}%`;
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          // Final settle
+          needle.setAttribute("transform", `rotate(${targetAngle},100,100)`);
+          label.textContent = `Confidence: ${confidence}%`;
+        }
+      }
+      requestAnimationFrame(animate);
     }, 300); // start after fade-in
 
     // ✅ Step 5: Store summary
@@ -115,6 +137,7 @@ Confidence: ${confidence}%`;
     if (navigator.share) nativeShareBtn.style.display = "inline-block";
   }, 1200);
 }
+
 
 
 // ✅ Copy Result
