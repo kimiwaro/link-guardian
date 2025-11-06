@@ -49,6 +49,7 @@ function checkLink() {
       <div class="verdict-header fade-step">${verdictEmoji} ${verdictText}</div>
       <div class="verdict-reason fade-step">Reason: ${reason}</div>
       <div class="confidence-label fade-step">Confidence: ${confidence}%</div>
+
       <svg class="gauge fade-step" viewBox="0 0 200 110" role="img" aria-label="Confidence gauge">
         <!-- Background arc -->
         <path d="M10 100 A90 90 0 0 1 190 100"
@@ -70,64 +71,65 @@ function checkLink() {
       </svg>
     `;
 
-// ✅ Step 4: Animate gauge + confidence number with bounded bounce
-const fill = resultDiv.querySelector(".gauge-fill");
-const needle = resultDiv.querySelector(".needle");
-const label = resultDiv.querySelector(".confidence-label");
-const maxArc = 283;
-const arc = (confidence / 100) * maxArc;
+    // ✅ Step 4: Animate gauge + confidence number with bounded bounce
+    const fill = resultDiv.querySelector(".gauge-fill");
+    const needle = resultDiv.querySelector(".needle");
+    const label = resultDiv.querySelector(".confidence-label");
+    const maxArc = 283;
+    const arc = (confidence / 100) * maxArc;
 
-let strokeColor = verdictClass === "safe" ? "green" :
-                  verdictClass === "fake" ? "red" : "orange";
+    let strokeColor = verdictClass === "safe" ? "green" :
+                      verdictClass === "fake" ? "red" : "orange";
 
-const duration = 1200;
-const startTime = performance.now();
+    const duration = 1200;
+    const startTime = performance.now();
 
-setTimeout(() => {
-  function animate(time) {
-    const elapsed = time - startTime;
-    const progress = Math.min(elapsed / duration, 1);
+    setTimeout(() => {
+      function animate(time) {
+        const elapsed = time - startTime;
+        const progress = Math.min(elapsed / duration, 1);
 
-    // Ease-out curve
-    const eased = 1 - Math.pow(1 - progress, 3);
+        // Ease-out curve
+        const eased = 1 - Math.pow(1 - progress, 3);
 
-    // Arc fill
-    const currentArc = arc * eased;
-    fill.setAttribute("stroke-dasharray", `${currentArc} ${maxArc - currentArc}`);
-    fill.setAttribute("stroke", strokeColor);
+        // Arc fill
+        const currentArc = arc * eased;
+        fill.setAttribute("stroke-dasharray", `${currentArc} ${maxArc - currentArc}`);
+        fill.setAttribute("stroke", strokeColor);
 
-    // Base target angle
-    const targetAngle = -90 + (confidence / 100) * 180;
+        // Base target angle (left -90° to right +90° mapped by confidence)
+        const targetAngle = -90 + (confidence / 100) * 180;
 
-    // Bounce offset (only negative wobble, never overshoot right)
-    const bounce = Math.sin(progress * Math.PI) * 2 * (1 - progress); // max ~2°
-    let angle = targetAngle * eased - bounce;
+        // Bounce offset (small negative-only wobble, never pushes past targetAngle)
+        // Sin pulse * amplitude * decay
+        const bounce = Math.sin(progress * Math.PI) * 2 * (1 - progress); // max ~2°
+        // Correct interpolation FROM -90 to targetAngle:
+        // start + (target - start) * eased
+        let angle = -90 + (targetAngle + 90) * eased - bounce;
 
-    // Clamp to dial bounds (-90 to targetAngle)
-    angle = Math.max(-90, Math.min(targetAngle, angle));
+        // Clamp to dial bounds (-90 to targetAngle) to ensure we never overshoot right
+        angle = Math.max(-90, Math.min(targetAngle, angle));
 
-    needle.setAttribute("transform", `rotate(${angle},100,100)`);
+        needle.setAttribute("transform", `rotate(${angle},100,100)`);
 
-    // Confidence number
-    const currentValue = Math.round(confidence * eased);
-    label.textContent = `Confidence: ${currentValue}%`;
+        // Confidence number
+        const currentValue = Math.round(confidence * eased);
+        label.textContent = `Confidence: ${currentValue}%`;
 
-    if (progress < 1) {
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          // Final settle at exact target
+          needle.setAttribute("transform", `rotate(${targetAngle},100,100)`);
+          label.textContent = `Confidence: ${confidence}%`;
+
+          // 🎉 Pulse effect on finish
+          label.classList.add("pulse");
+          setTimeout(() => label.classList.remove("pulse"), 600);
+        }
+      }
       requestAnimationFrame(animate);
-    } else {
-      // Final settle
-      needle.setAttribute("transform", `rotate(${targetAngle},100,100)`);
-      label.textContent = `Confidence: ${confidence}%`;
-
-      // 🎉 Pulse effect on finish
-      label.classList.add("pulse");
-      setTimeout(() => label.classList.remove("pulse"), 600);
-    }
-  }
-  requestAnimationFrame(animate);
-}, 300); // start after fade-in
-
-
+    }, 300); // start after fade-in
 
     // ✅ Step 5: Store summary
     const summary = 
@@ -139,6 +141,7 @@ Confidence: ${confidence}%`;
 
     // ✅ Step 6: Trigger fade-in
     resultDiv.classList.add("show");
+
     resultDiv.querySelectorAll(".fade-step").forEach(el => {
       requestAnimationFrame(() => el.classList.add("show"));
     });
