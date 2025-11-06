@@ -70,7 +70,7 @@ function checkLink() {
       </svg>
     `;
 
-// ✅ Step 4: Animate gauge + confidence number with bounded undershoot (no right overshoot)
+// ✅ Step 4: Animate gauge + confidence number with bounded bounce
 const fill = resultDiv.querySelector(".gauge-fill");
 const needle = resultDiv.querySelector(".needle");
 const label = resultDiv.querySelector(".confidence-label");
@@ -99,13 +99,12 @@ setTimeout(() => {
     // Base target angle
     const targetAngle = -90 + (confidence / 100) * 180;
 
-    // Undershoot-only bounce: never goes past targetAngle
-    const undershoot = 2; // small, subtle wobble
-    const wobble = Math.sin(progress * Math.PI); // 0→1→0
-    let angle = targetAngle * eased - undershoot * wobble * (1 - progress);
+    // Bounce offset (only negative wobble, never overshoot right)
+    const bounce = Math.sin(progress * Math.PI) * 2 * (1 - progress); // max ~2°
+    let angle = targetAngle * eased - bounce;
 
-    // Hard clamp to dial bounds (-90 to +90)
-    angle = Math.max(-90, Math.min(90, angle));
+    // Clamp to dial bounds (-90 to targetAngle)
+    angle = Math.max(-90, Math.min(targetAngle, angle));
 
     needle.setAttribute("transform", `rotate(${angle},100,100)`);
 
@@ -116,17 +115,18 @@ setTimeout(() => {
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      // Final settle exactly at target
+      // Final settle
       needle.setAttribute("transform", `rotate(${targetAngle},100,100)`);
       label.textContent = `Confidence: ${confidence}%`;
 
-      // Pulse finish
+      // 🎉 Pulse effect on finish
       label.classList.add("pulse");
       setTimeout(() => label.classList.remove("pulse"), 600);
     }
   }
   requestAnimationFrame(animate);
 }, 300); // start after fade-in
+
 
 
     // ✅ Step 5: Store summary
