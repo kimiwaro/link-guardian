@@ -54,7 +54,7 @@ input:focus {
 
 /* Needle animation */
 .needle {
-  transition: transform 0.8s cubic-bezier(0.4, 2.3, 0.3, 1); /* springy ease */
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); /* springy ease */
   transform-origin: 100px 100px; /* ensure rotation pivots correctly */
 }
 
