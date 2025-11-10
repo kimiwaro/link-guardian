@@ -71,14 +71,12 @@ function checkLink() {
       </svg>
     `;
 
-// ✅ Step 4: Animate gauge with strict clamps (no bounce, no overshoot)
+// ✅ Step 4: Animate gauge with strict ease-out (no overshoot)
 const fill = resultDiv.querySelector(".gauge-fill");
 const needle = resultDiv.querySelector(".needle");
 const label = resultDiv.querySelector(".confidence-label");
 
-// 1) Clamp confidence to 0–100 to prevent math overshoot
-const safeConfidence = Math.max(0, Math.min(100, confidence));
-
+const safeConfidence = Math.max(0, Math.min(100, confidence)); // clamp 0–100
 const maxArc = 283;
 const arc = (safeConfidence / 100) * maxArc;
 
@@ -86,19 +84,14 @@ let strokeColor = verdictClass === "safe" ? "green" :
                   verdictClass === "fake" ? "red" : "orange";
 
 const duration = 1200;
-
-// 2) Kill any lingering animations from previous runs
-if (resultDiv._raf) cancelAnimationFrame(resultDiv._raf);
-if (resultDiv._timeout) clearTimeout(resultDiv._timeout);
-
 const startTime = performance.now();
 
-resultDiv._timeout = setTimeout(() => {
+setTimeout(() => {
   function animate(time) {
     const elapsed = time - startTime;
     const progress = Math.min(elapsed / duration, 1);
 
-    // Ease-out curve (never > 1)
+    // Ease-out curve
     const eased = 1 - Math.pow(1 - progress, 3);
 
     // Arc fill
@@ -106,37 +99,35 @@ resultDiv._timeout = setTimeout(() => {
     fill.setAttribute("stroke-dasharray", `${currentArc} ${maxArc - currentArc}`);
     fill.setAttribute("stroke", strokeColor);
 
-    // Angle: strict LERP from -90° to target, clamped every frame
+    // Target angle: map confidence (0–100) to dial (-90° to +90°)
     const targetAngle = -90 + (safeConfidence / 100) * 180;
+
+    // Interpolate strictly between -90 and targetAngle
     let angle = -90 + (targetAngle + 90) * eased;
 
-    // 3) Hard clamp angle to dial bounds
-    angle = Math.max(-90, Math.min(90, angle));
+    // Clamp every frame
+    angle = Math.max(-90, Math.min(targetAngle, angle));
 
     needle.setAttribute("transform", `rotate(${angle},100,100)`);
 
-    // Confidence number (clamped)
+    // Confidence number
     const currentValue = Math.min(safeConfidence, Math.round(safeConfidence * eased));
     label.textContent = `Confidence: ${currentValue}%`;
 
     if (progress < 1) {
-      resultDiv._raf = requestAnimationFrame(animate);
+      requestAnimationFrame(animate);
     } else {
-      // Final settle: clamp again for absolute safety
-      const finalAngle = Math.max(-90, Math.min(90, targetAngle));
-      needle.setAttribute("transform", `rotate(${finalAngle},100,100)`);
+      // Final settle
+      needle.setAttribute("transform", `rotate(${targetAngle},100,100)`);
       label.textContent = `Confidence: ${safeConfidence}%`;
 
       label.classList.add("pulse");
       setTimeout(() => label.classList.remove("pulse"), 600);
-
-      // Clear trackers
-      resultDiv._raf = null;
-      resultDiv._timeout = null;
     }
   }
-  resultDiv._raf = requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 }, 300);
+
 
 
 
