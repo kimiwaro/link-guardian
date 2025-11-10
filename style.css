@@ -54,8 +54,36 @@ input:focus {
 
 .needle {
   transform-origin: 100px 100px;
-  transition: none; /* prevent CSS from interpolating beyond JS angle */
+  transition: none;            /* no CSS interpolation */
+  will-change: transform;      /* hint for smoother JS updates */
+  pointer-events: none;        /* avoid accidental selection */
 }
+
+
+/* Keep stroke rendering sharp on all pixel densities */
+.gauge path,
+.gauge line {
+  shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke; /* avoids width distortion on scaling */
+}
+
+/* Respect user preference to reduce animation intensity */
+@media (prefers-reduced-motion: reduce) {
+  .gauge-fill {
+    transition: stroke-dasharray 0.3s linear, stroke 0.2s linear;
+  }
+  .fade-step,
+  .result-card {
+    transition: none;
+  }
+  .confidence-label.pulse,
+  .confidence-label.glow {
+    animation: none;
+  }
+}
+
+
+
 
 
 /* Arc fill animation */
