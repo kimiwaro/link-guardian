@@ -71,7 +71,7 @@ function checkLink() {
       </svg>
     `;
 
- // ✅ Step 4: Animate gauge + confidence number with bounded bounce
+// ✅ Step 4: Animate gauge with controlled bounce (NO OVERSHOOT)
 const fill = resultDiv.querySelector(".gauge-fill");
 const needle = resultDiv.querySelector(".needle");
 const label = resultDiv.querySelector(".confidence-label");
@@ -89,51 +89,49 @@ setTimeout(() => {
     const elapsed = time - startTime;
     const progress = Math.min(elapsed / duration, 1);
 
-    // Ease-out curve
-    const eased = 1 - Math.pow(1 - progress, 3);
+    // Custom easing with small bounce but clamped
+    let eased;
+    if (progress < 0.8) {
+      // Normal ease-out for most of the animation
+      eased = 1 - Math.pow(1 - progress / 0.8, 3);
+    } else {
+      // Small bounce at the end but clamped to not exceed 1.0
+      const bounceProgress = (progress - 0.8) / 0.2;
+      eased = 1.0 + Math.sin(bounceProgress * Math.PI) * 0.05 * (1 - bounceProgress);
+      eased = Math.min(eased, 1.0); // Ensure never exceeds target
+    }
 
     // Arc fill
     const currentArc = arc * eased;
     fill.setAttribute("stroke-dasharray", `${currentArc} ${maxArc - currentArc}`);
     fill.setAttribute("stroke", strokeColor);
 
-    // Base target angle (−90° to +90° mapped by confidence)
+    // Calculate angle with bounce but clamped
     const targetAngle = -90 + (confidence / 100) * 180;
-
-    // Interpolated angle from start to target
     let angle = -90 + (targetAngle + 90) * eased;
-
-    // Bounce: small oscillation around the interpolated angle
-    const bounceAmplitude = 3; // degrees
-    const bounce = Math.sin(progress * Math.PI) * bounceAmplitude * (1 - progress);
-
-    // Apply bounce but clamp so we never exceed targetAngle
-    angle = Math.min(targetAngle, angle + bounce);
-
-    // Clamp to dial bounds (−90 to +90)
+    
+    // Double-clamp for safety
     angle = Math.max(-90, Math.min(90, angle));
 
     needle.setAttribute("transform", `rotate(${angle},100,100)`);
 
-    // Confidence number
-    const currentValue = Math.round(confidence * eased);
+    // Confidence number (clamped to never exceed final value)
+    const currentValue = Math.min(confidence, Math.round(confidence * eased));
     label.textContent = `Confidence: ${currentValue}%`;
 
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      // Final settle at exact target
+      // Final settle
       needle.setAttribute("transform", `rotate(${targetAngle},100,100)`);
       label.textContent = `Confidence: ${confidence}%`;
 
-      // 🎉 Pulse effect on finish
       label.classList.add("pulse");
       setTimeout(() => label.classList.remove("pulse"), 600);
     }
   }
   requestAnimationFrame(animate);
-}, 300); // start after fade-in
-
+}, 300);
 
 
     // ✅ Step 5: Store summary
