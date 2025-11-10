@@ -71,7 +71,7 @@ function checkLink() {
       </svg>
     `;
 
-    // ✅ Step 4: Animate gauge + confidence number with bounded bounce
+ // ✅ Step 4: Animate gauge + confidence number with bounded bounce
 const fill = resultDiv.querySelector(".gauge-fill");
 const needle = resultDiv.querySelector(".needle");
 const label = resultDiv.querySelector(".confidence-label");
@@ -133,6 +133,7 @@ setTimeout(() => {
   }
   requestAnimationFrame(animate);
 }, 300); // start after fade-in
+
 
 
     // ✅ Step 5: Store summary
