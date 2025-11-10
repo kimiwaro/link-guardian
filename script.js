@@ -71,7 +71,7 @@ function checkLink() {
       </svg>
     `;
 
-// ✅ Step 4: Animate gauge with bounded bounce (no overshoot)
+// ✅ Step 4: Animate gauge with symmetric bounded bounce
 const fill = resultDiv.querySelector(".gauge-fill");
 const needle = resultDiv.querySelector(".needle");
 const label = resultDiv.querySelector(".confidence-label");
@@ -100,17 +100,17 @@ setTimeout(() => {
     // Base target angle
     const targetAngle = -90 + (confidence / 100) * 180;
 
-    // Interpolated angle from start to target
+    // Interpolated angle
     let angle = -90 + (targetAngle + 90) * eased;
 
-    // Bounce: small oscillation around the target, damped as progress → 1
+    // Symmetric bounce: small oscillation around target
     const bounceAmplitude = 3; // degrees
     const bounce = Math.sin(progress * Math.PI) * bounceAmplitude * (1 - progress);
 
-    // Apply bounce but clamp so we never exceed targetAngle
-    angle = Math.min(targetAngle, angle + bounce);
+    // Apply bounce around the interpolated angle
+    angle += bounce;
 
-    // Clamp to dial bounds
+    // Clamp strictly within dial bounds
     angle = Math.max(-90, Math.min(90, angle));
 
     needle.setAttribute("transform", `rotate(${angle},100,100)`);
@@ -126,8 +126,9 @@ setTimeout(() => {
       needle.setAttribute("transform", `rotate(${targetAngle},100,100)`);
       label.textContent = `Confidence: ${confidence}%`;
 
-      label.classList.add("pulse");
-      setTimeout(() => label.classList.remove("pulse"), 600);
+      // 🎉 Pulse + glow effect
+      label.classList.add("pulse", "glow");
+      setTimeout(() => label.classList.remove("pulse", "glow"), 800);
     }
   }
   requestAnimationFrame(animate);
