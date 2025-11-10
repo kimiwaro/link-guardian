@@ -53,9 +53,10 @@ input:focus {
 }
 
 .needle {
-  
   transform-origin: 100px 100px;
+  transition: none; /* prevent CSS from interpolating beyond JS angle */
 }
+
 
 /* Arc fill animation */
 .gauge-fill {
