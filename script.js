@@ -91,7 +91,7 @@ setTimeout(() => {
     const elapsed = time - startTime;
     const progress = Math.min(elapsed / duration, 1);
 
-    // Ease-out curve
+    // Ease-out curve (smooth deceleration)
     const eased = 1 - Math.pow(1 - progress, 3);
 
     // Arc fill
@@ -102,25 +102,26 @@ setTimeout(() => {
     // Target angle: map confidence (0–100) to dial (-90° to +90°)
     const targetAngle = -90 + (safeConfidence / 100) * 180;
 
-    // Interpolate strictly between -90 and targetAngle
-    let angle = -90 + (targetAngle + 90) * eased;
+    // Linear interpolation from start (-90) to targetAngle
+    let angle = -90 + (targetAngle - (-90)) * eased;
 
-    // Clamp every frame
+    // Clamp every frame to ensure no overshoot
     angle = Math.max(-90, Math.min(targetAngle, angle));
 
     needle.setAttribute("transform", `rotate(${angle},100,100)`);
 
-    // Confidence number
+    // Confidence number (ease-out count up)
     const currentValue = Math.min(safeConfidence, Math.round(safeConfidence * eased));
     label.textContent = `Confidence: ${currentValue}%`;
 
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      // Final settle
+      // Final settle at exact target
       needle.setAttribute("transform", `rotate(${targetAngle},100,100)`);
       label.textContent = `Confidence: ${safeConfidence}%`;
 
+      // 🎉 Pulse effect on finish
       label.classList.add("pulse");
       setTimeout(() => label.classList.remove("pulse"), 600);
     }
