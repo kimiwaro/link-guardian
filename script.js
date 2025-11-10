@@ -71,7 +71,7 @@ function checkLink() {
       </svg>
     `;
 
-// ✅ Step 4: Animate gauge with symmetric bounded bounce
+// ✅ Step 4: Animate gauge with simple ease-out (no bounce)
 const fill = resultDiv.querySelector(".gauge-fill");
 const needle = resultDiv.querySelector(".needle");
 const label = resultDiv.querySelector(".confidence-label");
@@ -97,21 +97,9 @@ setTimeout(() => {
     fill.setAttribute("stroke-dasharray", `${currentArc} ${maxArc - currentArc}`);
     fill.setAttribute("stroke", strokeColor);
 
-    // Base target angle
+    // Needle angle (linear interpolation from -90° to target)
     const targetAngle = -90 + (confidence / 100) * 180;
-
-    // Interpolated angle
-    let angle = -90 + (targetAngle + 90) * eased;
-
-    // Symmetric bounce: small oscillation around target
-    const bounceAmplitude = 3; // degrees
-    const bounce = Math.sin(progress * Math.PI) * bounceAmplitude * (1 - progress);
-
-    // Apply bounce around the interpolated angle
-    angle += bounce;
-
-    // Clamp strictly within dial bounds
-    angle = Math.max(-90, Math.min(90, angle));
+    const angle = -90 + (targetAngle + 90) * eased;
 
     needle.setAttribute("transform", `rotate(${angle},100,100)`);
 
@@ -126,13 +114,14 @@ setTimeout(() => {
       needle.setAttribute("transform", `rotate(${targetAngle},100,100)`);
       label.textContent = `Confidence: ${confidence}%`;
 
-      // 🎉 Pulse + glow effect
-      label.classList.add("pulse", "glow");
-      setTimeout(() => label.classList.remove("pulse", "glow"), 800);
+      // 🎉 Pulse effect on finish
+      label.classList.add("pulse");
+      setTimeout(() => label.classList.remove("pulse"), 600);
     }
   }
   requestAnimationFrame(animate);
 }, 300);
+
 
 
     // ✅ Step 5: Store summary
