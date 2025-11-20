@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Link Guardian</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main>
@@ -13,21 +13,21 @@
       <p class="tagline">Paste a link. Know if it’s real. Share the truth.</p>
     </header>
 
-    <form onsubmit="checkLink(); return false;">
+    <form id="checkForm" onsubmit="checkLink(); return false;">
       <fieldset>
         <label for="urlInput" class="visually-hidden">Link to check</label>
-        <input type="url" id="urlInput" placeholder="https://example.com" required>
+        <input type="url" id="urlInput" placeholder="https://example.com" required />
         <button type="submit">Check Now</button>
       </fieldset>
     </form>
 
     <div id="result" class="result-card" aria-live="polite"></div>
 
-    <div class="actions">
-      <button id="copyBtn" onclick="copyResult()">📋 Copy Result</button>
-      <button id="shareBtn" onclick="shareToWhatsApp()">💬 Share to WhatsApp</button>
-      <button id="nativeShareBtn" onclick="shareNative()">📲 Share...</button>
-    </div>  
+    <div class="actions" aria-hidden="false">
+      <button id="copyBtn" onclick="copyResult()" aria-hidden="true">📋 Copy Result</button>
+      <button id="shareBtn" onclick="shareToWhatsApp()" aria-hidden="true">💬 Share to WhatsApp</button>
+      <button id="nativeShareBtn" onclick="shareNative()" aria-hidden="true">📲 Share...</button>
+    </div>
   </main>
 
   <footer>
