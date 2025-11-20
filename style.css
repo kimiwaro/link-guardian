@@ -1,214 +1,224 @@
+/* ---------------------------
+   Link Guardian — Main Styles
+   --------------------------- */
+
+/* Theme variables for easy tuning */
+:root{
+  --bg: #fafafa;
+  --text: #222;
+  --muted: #555;
+  --card-shadow: rgba(0,0,0,0.08);
+  --safe: #28a745;
+  --fake: #dc3545;
+  --unknown: #ffc107;
+  --focus: #007bff;
+  --gauge-bg: #eee;
+  --gauge-stroke-width: 20;
+}
+
 /* Base layout */
 body {
-  font-family: Arial, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
   max-width: 500px;
   margin: 50px auto;
+  padding: 0 15px;
+  background: var(--bg);
+  color: var(--text);
   text-align: center;
-  padding: 0 15px; /* mobile breathing room */
-  line-height: 1.5;
-  background-color: #fafafa;
-  color: #222;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-header h1 {
-  margin-bottom: 5px;
-}
-
-.tagline {
-  font-size: 0.9rem;
-  color: #555;
-  margin-bottom: 20px;
-}
+/* Headline / intro */
+header h1 { margin-bottom: 5px; }
+.tagline { font-size: 0.9rem; color: var(--muted); margin-bottom: 20px; }
 
 /* Form - stacked layout */
 form {
   display: flex;
-  flex-direction: column;   /* stack input and button */
+  flex-direction: column;
   gap: 0;
   align-items: stretch;
   margin-bottom: 15px;
 }
 
 input {
-  width: 100%;              /* ✅ fully responsive */
+  width: 100%;
   padding: 10px;
-  border: 1px solid #ccc;
   border-radius: 4px;
+  border: 1px solid #ccc;
   font-size: 0.95rem;
-  margin-bottom: 14px;      /* slightly more breathing room */
+  margin-bottom: 14px;
+  background: white;
+  color: var(--text);
 }
 
 input:focus {
-  outline: 2px solid #007bff;
-  border-color: #007bff;
+  outline: 2px solid var(--focus);
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.08);
 }
 
-/* SVG Gauge */
+/* ---------------------------
+   SVG Gauge
+   --------------------------- */
 .gauge {
   width: 220px;
   max-width: 100%;
   height: auto;
   display: block;
   margin: 15px auto;
+  user-select: none;
 }
 
+/* Needle stability: JS controls transform. Prevent CSS from interpolating rotation. */
 .needle {
   transform-origin: 100px 100px;
-  transition: none;            /* no CSS interpolation */
-  will-change: transform;      /* hint for smoother JS updates */
-  pointer-events: none;        /* avoid accidental selection */
+  transition: none;            /* JS only — prevents CSS overshoot */
+  will-change: transform;      /* performance hint */
+  pointer-events: none;
 }
 
-
-/* Keep stroke rendering sharp on all pixel densities */
+/* Keep strokes crisp and predictable on scaling */
 .gauge path,
 .gauge line {
   shape-rendering: geometricPrecision;
-  vector-effect: non-scaling-stroke; /* avoids width distortion on scaling */
+  vector-effect: non-scaling-stroke;
 }
 
-/* Respect user preference to reduce animation intensity */
-@media (prefers-reduced-motion: reduce) {
-  .gauge-fill {
-    transition: stroke-dasharray 0.3s linear, stroke 0.2s linear;
-  }
-  .fade-step,
-  .result-card {
-    transition: none;
-  }
-  .confidence-label.pulse,
-  .confidence-label.glow {
-    animation: none;
-  }
-}
-
-
-
-
-
-/* Arc fill animation */
+/* Arc fill animation (only stroke-dasharray animated) */
 .gauge-fill {
   transition: stroke-dasharray 0.8s ease, stroke 0.3s ease;
+  stroke-linecap: round;
 }
 
-/* Confidence label styling */
+/* ---------------------------
+   Confidence label & effects
+   --------------------------- */
 .confidence-label {
   font-size: 0.95rem;
-  font-weight: bold;
+  font-weight: 700;
   margin-top: 6px;
   text-align: center;
+  transition: color 0.25s ease;
 }
 
-/* Verdict-based theming for gauge arc + confidence text */
-.safe .gauge-fill { stroke: #28a745; }
-.fake .gauge-fill { stroke: #dc3545; }
-.unknown .gauge-fill { stroke: #ffc107; }
+/* Pulse animation */
+@keyframes pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.confidence-label.pulse {
+  animation: pulse 0.6s ease;
+}
 
-.safe .confidence-label { color: #28a745; }
-.fake .confidence-label { color: #dc3545; }
-.unknown .confidence-label { color: #ffc107; }
+/* Glow animation (subtle) */
+@keyframes glow {
+  0%   { text-shadow: 0 0 0 rgba(0,0,0,0); }
+  50%  { text-shadow: 0 0 10px currentColor; }
+  100% { text-shadow: 0 0 0 rgba(0,0,0,0); }
+}
+.confidence-label.glow {
+  animation: glow 0.8s ease;
+}
 
-/* Buttons */
+/* ---------------------------
+   Verdict theming
+   --------------------------- */
+.safe .gauge-fill { stroke: var(--safe); }
+.fake .gauge-fill { stroke: var(--fake); }
+.unknown .gauge-fill { stroke: var(--unknown); }
+
+.safe .confidence-label { color: var(--safe); }
+.fake .confidence-label { color: var(--fake); }
+.unknown .confidence-label { color: var(--unknown); }
+
+/* ---------------------------
+   Buttons
+   --------------------------- */
 button {
   padding: 12px 20px;
   cursor: pointer;
   border-radius: 4px;
   border: none;
-  font-weight: bold;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  font-weight: 700;
+  transition: background-color 0.18s ease, transform 0.08s ease;
   min-width: 120px;
+  background: #fff;
+  color: var(--text);
+  box-shadow: none;
 }
 
-button:hover {
-  background-color: #f0f0f0;
-}
-
+button:hover { background-color: #f0f0f0; }
 button:focus {
-  outline: 2px solid #007bff;
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
+button:active { transform: scale(0.97); }
 
-button:active {
-  transform: scale(0.97);
-}
+/* Specific action buttons */
+#copyBtn { display: none; background: var(--focus); color: #fff; }
+#copyBtn:hover { background: #0056b3; }
 
-/* Result card */
-#result {
-  padding: 15px;
-  border-radius: 5px;
-}
+#shareBtn { display: none; background: #25d366; color: #fff; }
+#shareBtn:hover { background: #1da851; }
+
+#nativeShareBtn { display: none; background: #6c757d; color: #fff; }
+#nativeShareBtn:hover { background: #5a6268; }
+
+/* ---------------------------
+   Result Card
+   --------------------------- */
+#result { padding: 15px; border-radius: 5px; }
 
 .result-card {
   margin-top: 20px;
   padding: 15px;
   border-radius: 6px;
-  font-weight: bold;
+  font-weight: 700;
   text-align: left;
   white-space: pre-line;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-
-  /* ✅ fade-in effect for the whole card */
+  box-shadow: 0 2px 6px var(--card-shadow);
   opacity: 0;
   transform: translateY(5px);
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.result-card.show {
-  opacity: 1;
-  transform: translateY(0);
-}
+.result-card.show { opacity: 1; transform: translateY(0); }
 
-/* Staggered reveal for inner elements */
+/* Fade-step reveal for inner elements */
 .fade-step {
   opacity: 0;
   transform: translateY(5px);
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
-.fade-step.show {
-  opacity: 1;
-  transform: translateY(0);
-}
+.fade-step.show { opacity: 1; transform: translateY(0); }
 
-/* Delay each step */
-.fade-step:nth-of-type(1) { transition-delay: 0.1s; }
-.fade-step:nth-of-type(2) { transition-delay: 0.3s; }
-.fade-step:nth-of-type(3) { transition-delay: 0.5s; }
-.fade-step:nth-of-type(4) { transition-delay: 0.7s; }
+/* Stagger delays */
+.fade-step:nth-of-type(1) { transition-delay: 0.08s; }
+.fade-step:nth-of-type(2) { transition-delay: 0.22s; }
+.fade-step:nth-of-type(3) { transition-delay: 0.36s; }
+.fade-step:nth-of-type(4) { transition-delay: 0.50s; }
 
-/* Verdict states */
-.safe {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
+/* Verdict states visuals on card */
+.safe { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.fake { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.unknown { background: #fff8e1; color: #5c4400; border: 1px solid #ffe08a; }
 
-.fake {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-.unknown {
-  background-color: #fff8e1;
-  color: #5c4400;
-  border: 1px solid #ffe08a;
-}
-
-/* Structured verdict content */
+/* Structured verdict */
 .verdict-header {
   font-size: 1.1rem;
-  font-weight: bold;
+  font-weight: 700;
   margin-bottom: 6px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
+.verdict-reason { font-size: 0.9rem; font-weight: 400; }
 
-.verdict-reason {
-  font-size: 0.9rem;
-  font-weight: normal;
-}
-
-/* Action buttons container */
+/* Actions container */
 .actions {
   display: flex;
   gap: 10px;
@@ -217,75 +227,49 @@ button:active {
   flex-wrap: wrap;
 }
 
-/* Copy Result button (blue) */
-#copyBtn {
-  display: none;
-  background-color: #007bff;
-  color: white;
-}
-#copyBtn:hover {
-  background-color: #0056b3;
-}
-
-/* WhatsApp Share button (green) */
-#shareBtn {
-  display: none;
-  background-color: #25d366;
-  color: white;
-}
-#shareBtn:hover {
-  background-color: #1da851;
-}
-
-/* Native Share button (gray) */
-#nativeShareBtn {
-  display: none;
-  background-color: #6c757d;
-  color: white;
-}
-#nativeShareBtn:hover {
-  background-color: #5a6268;
-}
-
-/* Loading shimmer */
+/* ---------------------------
+   Loading shimmer
+   --------------------------- */
 .loading {
-  background: linear-gradient(
-    90deg,
-    #f0f0f0 25%,
-    #e0e0e0 37%,
-    #f0f0f0 63%
-  );
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
   background-size: 400% 100%;
-  animation: shimmer 1.2s ease infinite; /* ✅ slightly faster */
+  animation: shimmer 1.2s linear infinite;
   border-radius: 6px;
   height: 60px;
   margin-top: 20px;
   position: relative;
 }
-
 .loading::after {
   content: "🕵️ Checking...";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #666;
   font-size: 0.9rem;
-  font-weight: bold;
+  font-weight: 700;
+}
+@keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+
+/* ---------------------------
+   Accessibility & Responsiveness
+   --------------------------- */
+
+/* Reduced motion: respect user preference */
+@media (prefers-reduced-motion: reduce) {
+  .gauge-fill { transition: stroke-dasharray 0.3s linear, stroke 0.2s linear; }
+  .fade-step, .result-card { transition: none; transform: none; opacity: 1; }
+  .confidence-label.pulse, .confidence-label.glow { animation: none; }
+  .loading { animation: none; background: #f0f0f0; }
 }
 
-@keyframes shimmer {
-  0% { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+/* Mobile spacing tweak */
+@media (max-width: 400px) {
+  body { margin: 20px auto; padding: 0 10px; }
+  .gauge { width: 200px; }
+  button { min-width: 100px; padding: 10px 14px; }
 }
 
-/* Footer */
-footer {
-  margin-top: 30px;
-  font-size: 0.8rem;
-  color: #666;
-}
+/* Small polish: ensure confidence text transitions color */
+.confidence-label { transition: color 0.25s ease; }
