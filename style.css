@@ -71,14 +71,18 @@ input:focus {
   display: block;
   margin: 15px auto;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Needle stability: JS controls transform. Prevent CSS from interpolating rotation. */
 .needle {
+  /* Ensure the origin is respected in SVG across browsers */
+  transform-box: fill-box;        /* makes transform-origin reliable in SVG */
   transform-origin: 100px 100px;
-  transition: none;            /* JS only — prevents CSS overshoot */
-  will-change: transform;      /* performance hint */
+  transition: none;               /* JS sets transform; no CSS interpolation */
+  will-change: transform;
   pointer-events: none;
+  backface-visibility: hidden;    /* rendering hint for smoother updates */
 }
 
 /* Keep strokes crisp and predictable on scaling */
@@ -94,6 +98,13 @@ input:focus {
   stroke-linecap: round;
 }
 
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .gauge-fill {
+    transition: stroke-dasharray 0.3s linear, stroke 0.2s linear;
+  }
+}
+
 /* ---------------------------
    Confidence label & effects
    --------------------------- */
@@ -103,6 +114,7 @@ input:focus {
   margin-top: 6px;
   text-align: center;
   transition: color 0.25s ease;
+  text-rendering: optimizeLegibility; /* crisper text on some platforms */
 }
 
 /* Pulse animation */
@@ -123,6 +135,14 @@ input:focus {
 }
 .confidence-label.glow {
   animation: glow 0.8s ease;
+}
+
+/* Reduced motion: disable decorative animations */
+@media (prefers-reduced-motion: reduce) {
+  .confidence-label.pulse,
+  .confidence-label.glow {
+    animation: none;
+  }
 }
 
 /* ---------------------------
