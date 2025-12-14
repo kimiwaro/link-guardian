@@ -4,16 +4,18 @@
 
 /* Theme variables for easy tuning */
 :root{
-  --bg: #fafafa;
+  --bg:  #fafafa;
   --text: #222;
   --muted: #555;
   --card-shadow: rgba(0,0,0,0.08);
-  --safe: #28a745;
+  --safe:  #28a745;
   --fake: #dc3545;
   --unknown: #ffc107;
   --focus: #007bff;
   --gauge-bg: #eee;
   --gauge-stroke-width: 20;
+  --gauge-color: #007bff; /* Dynamic color for gauge fill */
+  --gauge-arc-length: 283; /* Cached value */
 }
 
 /* Base layout */
@@ -24,7 +26,7 @@ body {
   max-width: 500px;
   margin: 50px auto;
   padding: 0 15px;
-  background: var(--bg);
+  background:  var(--bg);
   color: var(--text);
   text-align: center;
   -webkit-font-smoothing: antialiased;
@@ -33,7 +35,7 @@ body {
 
 /* Headline / intro */
 header h1 { margin-bottom: 5px; }
-.tagline { font-size: 0.9rem; color: var(--muted); margin-bottom: 20px; }
+. tagline { font-size: 0.9rem; color: var(--muted); margin-bottom: 20px; }
 
 /* Form - stacked layout */
 form {
@@ -61,7 +63,7 @@ input:focus {
 }
 
 /* ---------------------------
-   SVG Gauge
+   SVG Gauge - Enhanced
    --------------------------- */
 .gauge {
   width: 220px;
@@ -71,58 +73,116 @@ input:focus {
   margin: 15px auto;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  overflow: visible;              /* ensure needle/arc aren't clipped */
+  overflow: visible;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12));
+  transition: filter 0.3s ease;
 }
 
-/* Needle stability: JS controls transform. Prevent CSS from interpolating rotation. */
+/* Smooth gauge appearance */
+.gauge. active {
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+}
+
+/* Needle:  smooth rotation with proper origin */
 .needle {
   transform-box: fill-box;
   transform-origin: 100px 100px;
-  transition: none;
   will-change: transform;
   pointer-events: none;
   backface-visibility: hidden;
-  stroke: brown;
+  -webkit-backface-visibility: hidden;
+  stroke:  #5a4a42;
   stroke-width: 4;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
 }
 
-/* Keep strokes crisp and predictable on scaling */
+/* Keep strokes crisp */
 .gauge path,
-.gauge line {
+.gauge line,
+.gauge circle {
   shape-rendering: geometricPrecision;
   vector-effect: non-scaling-stroke;
 }
 
-/* Arc fill animation */
+/* Arc fill:  use custom property for color + mask for smooth animation */
 .gauge-fill {
-  transition: stroke-dasharray 0.8s ease, stroke 0.3s ease;
-  stroke-linecap: round;
+  stroke: var(--gauge-color);
   stroke-width: var(--gauge-stroke-width);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  /* Use stroke-dashoffset for smoother animation than dasharray */
+  stroke-dashoffset: 0;
+  transition: stroke 0.3s ease;
 }
 
 /* Background arc */
 .gauge-bg {
   stroke: var(--gauge-bg);
   stroke-width: var(--gauge-stroke-width);
+  stroke-linecap: round;
+  fill: none;
 }
 
-/* Endpoint marker */
+/* Tick marks for reference */
+.gauge-tick {
+  stroke: #ddd;
+  stroke-width:  1;
+  vector-effect: non-scaling-stroke;
+}
+
+. gauge-tick. major {
+  stroke:  #ccc;
+  stroke-width:  1.5;
+}
+
+/* Tick labels for accessibility */
+.gauge-tick-label {
+  font-size: 10px;
+  fill: #999;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* Endpoint marker:  smooth color transition */
 .arc-end {
-  /* r is set in SVG; keep styling here */
-  fill: transparent;              /* JS sets fill to match arc color */
+  fill: var(--gauge-color);
   stroke: none;
   pointer-events: none;
-  transition: fill 0.25s ease, transform 0.25s ease;
-  transform-origin: center;
-  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15));
+  transition: fill 0.3s ease;
+}
+
+/* Center pivot point */
+.gauge-pivot {
+  fill: #333;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+}
+
+/* Confidence ring (subtle background reference) */
+.gauge-ring {
+  stroke: #f5f5f5;
+  stroke-width: 1;
+  fill: none;
+  opacity: 0.6;
 }
 
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .gauge-fill { transition: stroke-dasharray 0.3s linear, stroke 0.2s linear; }
-  .arc-end { transition: none; }
+  .gauge {
+    filter: none;
+  }
+  . gauge-fill {
+    transition: stroke 0.2s linear;
+  }
+  .needle {
+    transition: none;
+  }
+  .arc-end {
+    transition: none;
+  }
 }
 
 /* ---------------------------
@@ -133,42 +193,61 @@ input:focus {
   font-weight: 700;
   margin-top: 6px;
   text-align: center;
+  color: var(--gauge-color);
   transition: color 0.25s ease;
   text-rendering: optimizeLegibility;
 }
 
-/* Pulse animation */
-@keyframes pulse {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.12); }
-  100% { transform: scale(1); }
+/* Subtle pulse on completion */
+@keyframes pulseSubtle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
-.confidence-label.pulse { animation: pulse 0.6s ease; }
-
-/* Glow animation */
-@keyframes glow {
-  0%   { text-shadow: 0 0 0 rgba(0,0,0,0); }
-  50%  { text-shadow: 0 0 10px currentColor; }
-  100% { text-shadow: 0 0 0 rgba(0,0,0,0); }
+.confidence-label.complete {
+  animation: pulseSubtle 0.5s ease-out;
 }
-.confidence-label.glow { animation: glow 0.8s ease; }
 
-@media (prefers-reduced-motion: reduce) {
-  .confidence-label.pulse,
-  .confidence-label.glow { animation: none; }
+/* Minimal glow (less aggressive) */
+@keyframes glowSubtle {
+  0%, 100% { filter: drop-shadow(0 0 0 var(--gauge-color)); }
+  50% { filter: drop-shadow(0 0 4px var(--gauge-color)); }
+}
+.gauge.complete {
+  animation: glowSubtle 0.6s ease-out;
+}
+
+@media (prefers-reduced-motion:  reduce) {
+  .confidence-label. complete,
+  .gauge.complete {
+    animation: none;
+  }
 }
 
 /* ---------------------------
    Verdict theming
    --------------------------- */
-.safe .gauge-fill,
-.safe .arc-end { stroke: var(--safe); fill: var(--safe); }
-.fake .gauge-fill,
-.fake .arc-end { stroke: var(--fake); fill: var(--fake); }
-.unknown .gauge-fill,
-.unknown .arc-end { stroke: var(--unknown); fill: var(--unknown); }
+. safe { 
+  background: #d4edda; 
+  color: #155724; 
+  border: 1px solid #c3e6cb;
+  --gauge-color: var(--safe);
+}
 
-.safe .confidence-label { color: var(--safe); }
+.fake { 
+  background: #f8d7da; 
+  color:  #721c24; 
+  border:  1px solid #f5c6cb;
+  --gauge-color: var(--fake);
+}
+
+.unknown { 
+  background: #fff8e1; 
+  color: #5c4400; 
+  border: 1px solid #ffe08a;
+  --gauge-color:  var(--unknown);
+}
+
+.safe . confidence-label { color: var(--safe); }
 .fake .confidence-label { color: var(--fake); }
 .unknown .confidence-label { color: var(--unknown); }
 
@@ -181,25 +260,33 @@ button {
   border-radius: 4px;
   border: none;
   font-weight: 700;
-  transition: background-color 0.18s ease, transform 0.08s ease;
+  transition: background-color 0.18s ease, transform 0.08s ease, box-shadow 0.18s ease;
   min-width: 120px;
   background: #fff;
   color: var(--text);
-  box-shadow: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-button:hover { background-color: #f0f0f0; }
+button:hover { 
+  background-color: #f0f0f0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
 button:focus {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
-button:active { transform: scale(0.97); }
+
+button:active { 
+  transform: scale(0.97);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
 
 /* Action buttons */
 #copyBtn { display: none; background: var(--focus); color: #fff; }
-#copyBtn:hover { background: #0056b3; }
-#shareBtn { display: none; background: #25d366; color: #fff; }
-#shareBtn:hover { background: #1da851; }
+#copyBtn: hover { background: #0056b3; }
+#shareBtn { display: none; background:  #25d366; color: #fff; }
+#shareBtn:hover { background:  #1da851; }
 #nativeShareBtn { display: none; background: #6c757d; color: #fff; }
 #nativeShareBtn:hover { background: #5a6268; }
 
@@ -212,44 +299,57 @@ button:active { transform: scale(0.97); }
   margin-top: 20px;
   padding: 15px;
   border-radius: 6px;
-  font-weight: 400;               /* keep body text normal weight */
+  font-weight: 400;
   text-align: left;
   white-space: pre-line;
   box-shadow: 0 2px 6px var(--card-shadow);
   opacity: 0;
-  transform: translateY(5px);
+  transform:  translateY(5px);
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.result-card.show { opacity: 1; transform: translateY(0); }
 
-/* Fade-step reveal */
+.result-card.show { 
+  opacity: 1; 
+  transform: translateY(0); 
+}
+
+/* Fade-step reveal with staggered timing */
 .fade-step {
   opacity: 0;
   transform: translateY(5px);
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
-.fade-step.show { opacity: 1; transform: translateY(0); }
 
-/* Stagger delays */
-.fade-step:nth-of-type(1) { transition-delay: 0.08s; }
-.fade-step:nth-of-type(2) { transition-delay: 0.22s; }
-.fade-step:nth-of-type(3) { transition-delay: 0.36s; }
-.fade-step:nth-of-type(4) { transition-delay: 0.50s; }
+.fade-step.show { 
+  opacity: 1; 
+  transform: translateY(0); 
+}
+
+/* Staggered delays via data attribute (set by JS) */
+.fade-step[data-delay="1"] { transition-delay: 0.08s; }
+.fade-step[data-delay="2"] { transition-delay: 0.16s; }
+.fade-step[data-delay="3"] { transition-delay: 0.24s; }
+.fade-step[data-delay="4"] { transition-delay:  0.32s; }
 
 /* Verdict states visuals */
 .safe { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 .fake { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 .unknown { background: #fff8e1; color: #5c4400; border: 1px solid #ffe08a; }
 
-.verdict-header {
+. verdict-header {
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight:  700;
   margin-bottom: 6px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.verdict-reason { font-size: 0.9rem; font-weight: 400; }
+
+.verdict-reason { 
+  font-size: 0.9rem; 
+  font-weight: 400; 
+  opacity: 0.9;
+}
 
 /* Actions container */
 .actions {
@@ -261,19 +361,22 @@ button:active { transform: scale(0.97); }
 }
 
 /* ---------------------------
-   Loading shimmer
+   Loading state
    --------------------------- */
-.loading {
+. result-card.loading {
+  animation: loadingPulse 1. 5s ease-in-out infinite;
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
   background-size: 400% 100%;
-  animation: shimmer 1.2s linear infinite;
-  border-radius: 6px;
+  animation:  shimmer 1.5s ease-in-out infinite;
   height: 60px;
-  margin-top: 20px;
+  padding: 15px;
+  border-radius:  6px;
   position: relative;
+  margin-top: 20px;
 }
-.loading::after {
-  content: "🕵️ Checking...";
+
+. result-card.loading::after {
+  content: "🕵️ Checking... ";
   position: absolute;
   inset: 0;
   display: flex;
@@ -282,27 +385,122 @@ button:active { transform: scale(0.97); }
   color: #666;
   font-size: 0.9rem;
   font-weight: 700;
+  border-radius: 6px;
 }
-@keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+
+@keyframes shimmer { 
+  0% { background-position: -400px 0; } 
+  100% { background-position: 400px 0; } 
+}
+
+@keyframes loadingPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
 
 /* ---------------------------
    Accessibility & Responsiveness
    --------------------------- */
 
-/* Reduced motion: respect user preference */
+/* Reduced motion:  respect user preference */
 @media (prefers-reduced-motion: reduce) {
-  .gauge-fill { transition: stroke-dasharray 0.3s linear, stroke 0.2s linear; }
-  .fade-step, .result-card { transition: none; transform: none; opacity: 1; }
-  .confidence-label.pulse, .confidence-label.glow { animation: none; }
-  .loading { animation: none; background: #f0f0f0; }
+  .gauge,
+  .gauge-fill,
+  .needle,
+  .arc-end,
+  .fade-step,
+  .result-card,
+  .confidence-label,
+  button {
+    transition: none ! important;
+    animation: none !important;
+  }
+
+  . gauge {
+    filter: none !important;
+  }
+
+  .needle {
+    filter: none !important;
+  }
+
+  .arc-end {
+    filter: none !important;
+  }
 }
 
 /* Mobile spacing tweak */
 @media (max-width: 400px) {
-  body { margin: 20px auto; padding: 0 10px; }
-  .gauge { width: 200px; }
-  button { min-width: 100px; padding: 10px 14px; }
+  body { 
+    margin: 20px auto; 
+    padding: 0 10px; 
+  }
+  
+  .gauge { 
+    width: 200px; 
+  }
+  
+  button { 
+    min-width: 100px; 
+    padding: 10px 14px; 
+    font-size: 0.9rem;
+  }
+  
+  . verdict-header {
+    font-size: 1rem;
+  }
 }
 
-/* Small polish: ensure confidence text transitions color */
-.confidence-label { transition: color 0.25s ease; }
+/* Dark mode support (optional future enhancement) */
+@media (prefers-color-scheme: dark) {
+  : root {
+    --bg: #1a1a1a;
+    --text: #f0f0f0;
+    --muted: #aaa;
+    --card-shadow:  rgba(0,0,0,0.4);
+    --gauge-bg: #333;
+  }
+
+  input {
+    background:  #2a2a2a;
+    border-color: #444;
+    color: #f0f0f0;
+  }
+
+  input:focus {
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
+  }
+
+  button {
+    background: #2a2a2a;
+    color: #f0f0f0;
+  }
+
+  button:hover {
+    background-color: #3a3a3a;
+  }
+
+  . gauge-tick {
+    stroke: #555;
+  }
+
+  .gauge-tick.major {
+    stroke: #666;
+  }
+
+  .gauge-tick-label {
+    fill: #777;
+  }
+
+  .gauge-ring {
+    stroke: #333;
+  }
+
+  .gauge-pivot {
+    fill: #ccc;
+  }
+
+  . gauge-pivot {
+    filter: drop-shadow(0 1px 1px rgba(255,255,255,0.1));
+  }
+}
