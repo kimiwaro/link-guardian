@@ -13,20 +13,32 @@
       <p class="tagline">Paste a link. Know if it’s real. Share the truth.</p>
     </header>
 
-    <form id="checkForm" onsubmit="checkLink(); return false;">
+    <!-- Form: no inline JS, submit handled in script.js -->
+    <form id="checkForm" novalidate>
       <fieldset>
         <label for="urlInput" class="visually-hidden">Link to check</label>
-        <input type="url" id="urlInput" placeholder="https://example.com" required />
-        <button type="submit">Check Now</button>
+        <input
+          type="url"
+          id="urlInput"
+          name="url"
+          placeholder="https://example.com"
+          autocomplete="url"
+          required
+          inputmode="url"
+          aria-label="URL to check"
+        />
+        <button type="submit" id="submitBtn">Check Now</button>
       </fieldset>
     </form>
 
-    <div id="result" class="result-card" aria-live="polite"></div>
+    <!-- Result area: role=status + aria-live for screen readers -->
+    <div id="result" class="result-card" role="status" aria-live="polite"></div>
 
+    <!-- Action buttons: explicit type=button so they don't submit the form -->
     <div class="actions" aria-hidden="false">
-      <button id="copyBtn" onclick="copyResult()" aria-hidden="true">📋 Copy Result</button>
-      <button id="shareBtn" onclick="shareToWhatsApp()" aria-hidden="true">💬 Share to WhatsApp</button>
-      <button id="nativeShareBtn" onclick="shareNative()" aria-hidden="true">📲 Share...</button>
+      <button id="copyBtn" type="button" onclick="copyResult()" aria-hidden="true">📋 Copy Result</button>
+      <button id="shareBtn" type="button" onclick="shareToWhatsApp()" aria-hidden="true">💬 Share to WhatsApp</button>
+      <button id="nativeShareBtn" type="button" onclick="shareNative()" aria-hidden="true">📲 Share...</button>
     </div>
   </main>
 
@@ -34,6 +46,17 @@
     <small>⚠️ This is an early tool. Always double‑check with official sources.</small>
   </footer>
 
-  <script src="script.js"></script>
+  <!-- Helpful fallback for users with JS disabled -->
+  <noscript>
+    <div style="max-width:500px;margin:16px auto;padding:12px;border-radius:6px;background:#fff3cd;color:#856404;border:1px solid #ffeeba;">
+      JavaScript is required for Link Guardian to work. Please enable JavaScript and reload the page.
+    </div>
+  </noscript>
+
+  <!-- Load script at end of body so DOM elements exist when it runs.
+       script.js should attach the submit handler:
+       document.getElementById('checkForm').addEventListener('submit', e => { e.preventDefault(); checkLink(); });
+  -->
+  <script src="script.js" defer></script>
 </body>
 </html>
