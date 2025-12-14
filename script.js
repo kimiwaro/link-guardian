@@ -209,54 +209,61 @@ function renderResultCard(root, { verdictClass, verdictEmoji, verdictText, reaso
   conf.setAttribute('aria-live', 'polite');
   conf.textContent = `Confidence: ${confidence}%`;
 
-  // Create SVG gauge via createElementNS
-  const SVG_NS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute('class', 'gauge fade-step');
-  svg.setAttribute('viewBox', '0 0 200 110');
-  svg.setAttribute('role', 'img');
-  svg.setAttribute('aria-label', 'Confidence gauge');
+// Create SVG gauge via createElementNS
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const svg = document.createElementNS(SVG_NS, 'svg');
+svg.setAttribute('class', 'gauge fade-step');
+svg.setAttribute('viewBox', '0 0 200 110');
+svg.setAttribute('role', 'img');
+svg.setAttribute('aria-label', 'Confidence gauge');
 
-  // Background arc
-  const bgPath = document.createElementNS(SVG_NS, 'path');
-  bgPath.setAttribute('class', 'gauge-bg');
-  bgPath.setAttribute('d', 'M10 100 A90 90 0 0 1 190 100');
-  bgPath.setAttribute('fill', 'none');
-  bgPath.setAttribute('stroke', '#eee');
-  bgPath.setAttribute('stroke-width', '20');
+// Background arc
+const bgPath = document.createElementNS(SVG_NS, 'path');
+bgPath.setAttribute('class', 'gauge-bg');
+bgPath.setAttribute('d', 'M10 100 A90 90 0 0 1 190 100');
+bgPath.setAttribute('fill', 'none');
+bgPath.setAttribute('stroke', '#eee');
+bgPath.setAttribute('stroke-width', '20');
 
-  // Dynamic arc
-  const fillPath = document.createElementNS(SVG_NS, 'path');
-  fillPath.setAttribute('class', 'gauge-fill');
-  fillPath.setAttribute('d', 'M10 100 A90 90 0 0 1 190 100');
-  fillPath.setAttribute('fill', 'none');
-  fillPath.setAttribute('stroke-width', '20');
-  fillPath.setAttribute('stroke-dasharray', '0 283');
+// Dynamic arc
+const fillPath = document.createElementNS(SVG_NS, 'path');
+fillPath.setAttribute('class', 'gauge-fill');
+fillPath.setAttribute('d', 'M10 100 A90 90 0 0 1 190 100');
+fillPath.setAttribute('fill', 'none');
+fillPath.setAttribute('stroke-width', '20');
+fillPath.setAttribute('stroke-dasharray', '0 283');
 
-  // Needle
-  const needle = document.createElementNS(SVG_NS, 'line');
-  needle.setAttribute('class', 'needle');
-  needle.setAttribute('x1', '100');
-  needle.setAttribute('y1', '100');
-  needle.setAttribute('x2', '100');
-  needle.setAttribute('y2', '20');
-  needle.setAttribute('stroke', 'brown');
-  needle.setAttribute('stroke-width', '4');
-  needle.setAttribute('stroke-linecap', 'round');
-  needle.setAttribute('transform', 'rotate(-90,100,100)');
+// Needle
+const needle = document.createElementNS(SVG_NS, 'line');
+needle.setAttribute('class', 'needle');
+needle.setAttribute('x1', '100');
+needle.setAttribute('y1', '100');
+needle.setAttribute('x2', '100');
+needle.setAttribute('y2', '20');
+needle.setAttribute('stroke', 'brown');
+needle.setAttribute('stroke-width', '4');
+needle.setAttribute('stroke-linecap', 'round');
+needle.setAttribute('transform', 'rotate(-90,100,100)');
 
-  // Center cover
-  const cover = document.createElementNS(SVG_NS, 'circle');
-  cover.setAttribute('cx', '100');
-  cover.setAttribute('cy', '100');
-  cover.setAttribute('r', '8');
-  cover.setAttribute('fill', '#333');
+// Center cover
+const cover = document.createElementNS(SVG_NS, 'circle');
+cover.setAttribute('cx', '100');
+cover.setAttribute('cy', '100');
+cover.setAttribute('r', '8');
+cover.setAttribute('fill', '#333');
 
-  // Append in order
-  svg.appendChild(bgPath);
-  svg.appendChild(fillPath);
-  svg.appendChild(needle);
-  svg.appendChild(cover);
+// Endpoint marker
+const endCircle = document.createElementNS(SVG_NS, 'circle');
+endCircle.setAttribute('class', 'arc-end');
+endCircle.setAttribute('r', '5');
+endCircle.setAttribute('fill', 'transparent');
+
+// Append in order
+svg.appendChild(bgPath);
+svg.appendChild(fillPath);
+svg.appendChild(needle);
+svg.appendChild(cover);
+svg.appendChild(endCircle);
 
   // Append to root
   root.appendChild(header);
@@ -271,15 +278,15 @@ function renderResultCard(root, { verdictClass, verdictEmoji, verdictText, reaso
   });
 }
 
-/* Animate gauge: uses background path length for arc math */
 function animateGauge(root, confidence, color, options = {}) {
   const { duration = 1200, reduceMotion = false, debug = false } = options;
   const fill = root.querySelector('.gauge-fill');
   const needle = root.querySelector('.needle');
   const label = root.querySelector('.confidence-label');
   const pathEl = root.querySelector('.gauge-bg');
+  const endCircle = root.querySelector('.arc-end');
 
-  if (!fill || !needle || !label || !pathEl) return;
+  if (!fill || !needle || !label || !pathEl || !endCircle) return;
 
   let maxArc;
   try { maxArc = pathEl.getTotalLength(); } catch { maxArc = 283; }
@@ -290,9 +297,13 @@ function animateGauge(root, confidence, color, options = {}) {
   const targetAngle = Math.max(-90, Math.min(90, rawTarget));
 
   fill.setAttribute('stroke', color);
+  endCircle.setAttribute('fill', color);
 
   if (reduceMotion) {
     fill.setAttribute('stroke-dasharray', `${arc} ${maxArc - arc}`);
+    const pt = pathEl.getPointAtLength(arc);
+    endCircle.setAttribute('cx', pt.x);
+    endCircle.setAttribute('cy', pt.y);
     needle.setAttribute('transform', `rotate(${targetAngle},100,100)`);
     label.textContent = `Confidence: ${safeConfidence}%`;
     return;
@@ -309,34 +320,35 @@ function animateGauge(root, confidence, color, options = {}) {
   function frame(now) {
     if (!start) start = now;
     const elapsed = now - start;
-    const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+    const progress = Math.min(elapsed / duration, 1);
     const eased = 1 - Math.pow(1 - progress, 3);
 
     const currentArc = arc * eased;
     fill.setAttribute('stroke-dasharray', `${currentArc} ${maxArc - currentArc}`);
 
+    // update endpoint position
+    const pt = pathEl.getPointAtLength(currentArc);
+    endCircle.setAttribute('cx', pt.x);
+    endCircle.setAttribute('cy', pt.y);
+
     let angle = -90 + (targetAngle - (-90)) * eased;
     angle = Math.max(-90, Math.min(targetAngle, angle));
     needle.setAttribute('transform', `rotate(${angle},100,100)`);
 
-    const currentValue = Math.min(safeConfidence, Math.round(safeConfidence * eased));
+    const currentValue = Math.round(safeConfidence * eased);
     label.textContent = `Confidence: ${currentValue}%`;
-
-    if (debug) console.log({ progress, eased, angle, targetAngle });
 
     if (progress < 1) {
       currentRaf = requestAnimationFrame(frame);
     } else {
       needle.setAttribute('transform', `rotate(${targetAngle},100,100)`);
       label.textContent = `Confidence: ${safeConfidence}%`;
-      label.classList.add('pulse', 'glow');
-      setTimeout(() => label.classList.remove('pulse', 'glow'), 800);
-      currentRaf = null;
     }
   }
 
   currentRaf = requestAnimationFrame(frame);
 }
+
 
 /* Copy / share helpers */
 function copyResult() {
