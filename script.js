@@ -1,25 +1,22 @@
-/* script.js — Link Guardian v2.0
-   Smart refinements: 
-   - Consolidated SVG gauge factory
-   - Cached metrics to prevent redundant calculations
-   - Event delegation for button handlers
-   - Heuristics logic separated from rendering
-   - Enhanced error handling and edge cases
-   - Performance optimizations (debounce, memoization)
-   - Accessibility-first approach
-   - Data-driven styling
+/* script.js — Link Guardian v3.0 — Redesigned Gauge
+   - Clean, modern gauge design with proper proportions
+   - Thin, elegant strokes (8px, not 20px)
+   - Unified center circle for visual harmony
+   - No disconnected end-dots or blobs
+   - Slim needle, centered rotation
+   - Smooth animations with cubic-bezier easing
 */
 
 const DEBUG = new URLSearchParams(location.search).has('debug');
 
 // ============================================
-// STATE MANAGEMENT
+// STATE & CONFIG
 // ============================================
 const STATE = {
   submitLocked: false,
   currentController: null,
   currentRaf: null,
-  gaugeMetrics: null, // Cache for arc length
+  gaugeArcLength: null,
 };
 
 const CONFIG = {
@@ -37,102 +34,72 @@ const VERDICT_CONFIG = {
     emoji: '✅',
     text: 'Likely Genuine',
     color: '#28a745',
-    bgColor: '#d4edda',
-    borderColor: '#c3e6cb',
-    textColor: '#155724',
   },
   fake: {
     class: 'fake',
     emoji: '⚠️',
     text:  'Likely Fake',
     color: '#dc3545',
-    bgColor:  '#f8d7da',
-    borderColor: '#f5c6cb',
-    textColor: '#721c24',
   },
   unknown: {
     class: 'unknown',
     emoji: '❓',
     text: 'Invalid URL',
     color: '#ffc107',
-    bgColor:  '#fff8e1',
-    borderColor:  '#ffe08a',
-    textColor: '#5c4400',
   },
 };
 
-/* Easing functions */
 const EASING = {
   linear: (t) => t,
   easeInOutQuad: (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
   easeOutCubic: (t) => 1 - Math.pow(1 - t, 3),
   easeOutQuart: (t) => 1 - Math.pow(1 - t, 4),
-  easeOutElastic: (t) => {
-    if (t === 0 || t === 1) return t;
-    const p = 0.3;
-    const s = p / (2 * Math.PI);
-    return Math.pow(2, -10 * t) * Math.sin((t - s) * (2 * Math.PI) / p) + 1;
-  },
 };
 
 // ============================================
 // INITIALIZATION
 // ============================================
-document.addEventListener('DOMContentLoaded', initializeApp);
-
-function initializeApp() {
-  wireFormListeners();
-  wireButtonListeners();
-  debugLog('App initialized');
-}
-
-function wireFormListeners() {
+document. addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('checkForm');
-  const input = document.getElementById('urlInput');
+  const input = document. getElementById('urlInput');
+  const actionsContainer = document.querySelector('.actions');
 
-  if (!form) return;
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    checkLink();
-  });
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      checkLink();
+    });
+  }
 
   if (input) {
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') input.value = '';
     });
-
-    // Focus on input on page load for better UX
     input.focus();
   }
-}
 
-function wireButtonListeners() {
-  const actionsContainer = document.querySelector('.actions');
-  if (!actionsContainer) return;
-
-  actionsContainer.addEventListener('click', (e) => {
-    const btn = e.target.closest('button');
-    if (!btn) return;
-
-    if (btn.id === 'copyBtn') copyResult();
-    if (btn.id === 'shareBtn') shareToWhatsApp();
-    if (btn.id === 'nativeShareBtn') shareNative();
-  });
-}
+  if (actionsContainer) {
+    actionsContainer.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      if (btn.id === 'copyBtn') copyResult();
+      if (btn.id === 'shareBtn') shareToWhatsApp();
+      if (btn.id === 'nativeShareBtn') shareNative();
+    });
+  }
+});
 
 // ============================================
 // MAIN LOGIC
 // ============================================
 function checkLink() {
-  // Debounce multiple rapid clicks
   if (STATE.submitLocked) return;
   STATE.submitLocked = true;
   setTimeout(() => {
     STATE.submitLocked = false;
   }, CONFIG.SUBMIT_LOCK_MS);
 
-  // Abort previous operation
+  // Abort previous
   abortCurrentOperation();
 
   STATE.currentController = new AbortController();
@@ -144,24 +111,20 @@ function checkLink() {
 
   if (!resultDiv || !url) return;
 
-  // Show loading state
   showLoadingState(resultDiv);
   hideActionButtons();
 
-  // Debounced check with cancellation support
   const delayId = setTimeout(() => {
     if (signal.aborted) return;
 
     try {
       const parsedUrl = new URL(url);
       const verdict = analyzeUrl(parsedUrl);
-      renderResult(resultDiv, verdict);
+      renderResultCard(resultDiv, verdict);
       animateGaugeForVerdict(resultDiv, verdict);
       showActionButtons();
-
-      // Store summary for share/copy actions
       storeResultSummary(resultDiv, parsedUrl, verdict);
-    } catch (error) {
+    } catch {
       const verdict = {
         verdictClass: 'unknown',
         verdictEmoji: '❓',
@@ -170,11 +133,10 @@ function checkLink() {
         confidence: 0,
         color:  VERDICT_CONFIG.unknown.color,
       };
-      renderResult(resultDiv, verdict, true); // true = simple result
+      renderResultCard(resultDiv, verdict, true);
     }
   }, CONFIG.DELAY_MS);
 
-  // Allow cancellation
   signal.addEventListener('abort', () => {
     clearTimeout(delayId);
     resultDiv.classList.remove('loading');
@@ -185,126 +147,101 @@ function analyzeUrl(parsedUrl) {
   const hrefLower = parsedUrl.href.toLowerCase();
   const host = parsedUrl.hostname.toLowerCase();
 
-  // Detect issues
-  const issues = detectUrlIssues(host, hrefLower, parsedUrl.protocol);
+  const issues = [];
 
-  // Calculate confidence score
-  let confidence = 85;
-  const flags = [];
-
-  issues.forEach(({ type, score, message }) => {
-    confidence -= score;
-    flags.push(message);
-  });
-
-  confidence = Math.max(0, Math.min(100, confidence));
-
-  // Determine verdict
-  let verdictType = 'safe';
-  if (flags.length > 0 || confidence < 60) {
-    verdictType = 'fake';
+  // Punycode check
+  if (host.includes('xn--')) {
+    issues.push({ score: 35, message: 'Punycode (possible homograph)' });
   }
 
+  // Shortener check
+  if (SHORTENERS.some(s => host === s || host.endsWith('.' + s))) {
+    issues.push({ score: 30, message: 'URL shortener' });
+  }
+
+  // Suspicious TLD
+  if (SUSPICIOUS_TLDS.some(t => host.endsWith(t))) {
+    issues.push({ score: 25, message: 'Uncommon TLD' });
+  }
+
+  // Login keywords
+  if (hrefLower.includes('login') || hrefLower.includes('signin') || hrefLower.includes('secure')) {
+    issues.push({ score: 20, message: 'Login/secure keyword' });
+  }
+
+  // Unusual protocol
+  if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+    issues.push({ score: 40, message: 'Unusual protocol' });
+  }
+
+  let confidence = 85;
+  const flags = issues.map(i => i.message);
+  issues.forEach(i => (confidence -= i.score));
+  confidence = Math.max(0, Math.min(100, confidence));
+
+  const verdictType = flags.length > 0 || confidence < 60 ? 'fake' : 'safe';
   const verdictConfig = VERDICT_CONFIG[verdictType];
 
   return {
-    verdictClass: verdictConfig.class,
+    verdictClass: verdictConfig. class,
     verdictEmoji: verdictConfig.emoji,
     verdictText: verdictConfig.text,
     reason: flags.length ?  flags.join('; ') : 'No obvious suspicious patterns.',
     confidence,
     color: verdictConfig. color,
     url: parsedUrl.href,
-    ... verdictConfig,
   };
-}
-
-function detectUrlIssues(host, hrefLower, protocol) {
-  const issues = [];
-
-  // Check for punycode (IDN homograph attacks)
-  if (host.includes('xn--')) {
-    issues.push({ type: 'punycode', score: 35, message: 'Punycode (possible homograph)' });
-  }
-
-  // Check for URL shorteners
-  if (SHORTENERS.some(s => host === s || host.endsWith('.' + s))) {
-    issues.push({ type: 'shortener', score: 30, message: 'URL shortener' });
-  }
-
-  // Check for suspicious TLDs
-  if (SUSPICIOUS_TLDS.some(t => host.endsWith(t))) {
-    issues.push({ type: 'suspiciousTld', score: 25, message:  'Uncommon TLD' });
-  }
-
-  // Check for login/secure keywords
-  if (hrefLower.includes('login') || hrefLower.includes('signin') || hrefLower.includes('secure')) {
-    issues.push({ type: 'loginKeyword', score: 20, message: 'Login/secure keyword' });
-  }
-
-  // Check for unusual protocols
-  if (protocol !== 'http: ' && protocol !== 'https:') {
-    issues.push({ type: 'protocol', score:  40, message: 'Unusual protocol' });
-  }
-
-  return issues;
 }
 
 // ============================================
 // RENDERING
 // ============================================
-function renderResult(resultDiv, verdict, isSimple = false) {
+function renderResultCard(resultDiv, verdict, isSimple = false) {
   resultDiv.innerHTML = '';
   resultDiv.className = 'result-card';
   resultDiv.classList.add(verdict.verdictClass);
   resultDiv.dataset.verdict = verdict.verdictClass;
   resultDiv.dataset.confidence = verdict.confidence;
-
-  // Update CSS custom property for color
   resultDiv.style.setProperty('--gauge-color', verdict.color);
 
   const elements = [];
 
   // Header
-  const header = createElement('div', {
-    className: 'verdict-header fade-step',
-    'data-delay': '1',
-    innerHTML: `${verdict.verdictEmoji} ${verdict.verdictText}`,
-    role: 'heading',
-    'aria-level': '2',
-  });
+  const header = document.createElement('div');
+  header.className = 'verdict-header fade-step';
+  header.setAttribute('data-delay', '1');
+  header.setAttribute('role', 'heading');
+  header.setAttribute('aria-level', '2');
+  header.innerHTML = `${verdict.verdictEmoji} ${verdict.verdictText}`;
   elements.push(header);
 
   // Reason
-  const reasonEl = createElement('div', {
-    className: 'verdict-reason fade-step',
-    'data-delay': '2',
-    textContent: `Reason: ${verdict.reason}`,
-  });
+  const reasonEl = document.createElement('div');
+  reasonEl.className = 'verdict-reason fade-step';
+  reasonEl.setAttribute('data-delay', '2');
+  reasonEl.textContent = `Reason: ${verdict.reason}`;
   elements.push(reasonEl);
 
   // Confidence label
-  const confEl = createElement('div', {
-    className: 'confidence-label fade-step',
-    'data-delay': '3',
-    textContent: `Confidence: ${verdict.confidence}%`,
-    'aria-live': 'polite',
-    role: 'status',
-  });
+  const confEl = document.createElement('div');
+  confEl.className = 'confidence-label fade-step';
+  confEl.setAttribute('data-delay', '3');
+  confEl.setAttribute('aria-live', 'polite');
+  confEl.setAttribute('role', 'status');
+  confEl.textContent = `Confidence: ${verdict.confidence}%`;
   elements.push(confEl);
 
-  // Gauge (skip for simple/invalid results)
+  // Gauge (skip for invalid/simple)
   if (!isSimple) {
-    const gauge = createGaugeSVG(verdict.confidence, verdict.color);
+    const gauge = createModernGaugeSVG(verdict.confidence, verdict.color);
     gauge.classList.add('fade-step');
     gauge.setAttribute('data-delay', '4');
     elements.push(gauge);
   }
 
-  // Append all elements
-  elements.forEach(el => resultDiv. appendChild(el));
+  elements.forEach(el => resultDiv.appendChild(el));
 
-  // Trigger staggered animation
+  // Staggered animation
   requestAnimationFrame(() => {
     resultDiv.classList.add('show');
     resultDiv.querySelectorAll('.fade-step').forEach(el => {
@@ -314,136 +251,63 @@ function renderResult(resultDiv, verdict, isSimple = false) {
   });
 }
 
-function createGaugeSVG(confidence, color) {
+function createModernGaugeSVG(confidence, color) {
   const SVG_NS = 'http://www.w3.org/2000/svg';
-  const svg = document. createElementNS(SVG_NS, 'svg');
+  const svg = document.createElementNS(SVG_NS, 'svg');
 
   svg.setAttribute('class', 'gauge');
-  svg.setAttribute('viewBox', '0 0 200 110');
+  svg.setAttribute('viewBox', '0 0 200 120');
+  svg.setAttribute('width', '220');
+  svg.setAttribute('height', '120');
   svg.setAttribute('role', 'img');
-  svg.setAttribute('aria-label', `Confidence gauge: ${confidence}%`);
+  svg.setAttribute('aria-label', `Confidence gauge:  ${confidence}%`);
 
-  // Background arc
-  const bgPath = createSVGElement(SVG_NS, 'path', {
-    class: 'gauge-bg',
-    d: 'M10 100 A90 90 0 0 1 190 100',
-    fill: 'none',
-    stroke: '#eee',
-    'stroke-width': '20',
-  });
+  // Background track (thin, subtle)
+  const track = document.createElementNS(SVG_NS, 'path');
+  track.setAttribute('class', 'gauge-track');
+  track.setAttribute('d', 'M30,100 A70,70 0 0 1 170,100');
+  track.setAttribute('fill', 'none');
+  track.setAttribute('stroke', '#eaeaea');
+  track.setAttribute('stroke-width', '8');
+  track.setAttribute('stroke-linecap', 'round');
+  svg.appendChild(track);
 
-  // Tick marks
-  const tickGroup = createTickMarks(SVG_NS);
-  tickGroup.forEach(el => svg.appendChild(el));
+  // Value arc (dynamic, animated)
+  const arc = document. createElementNS(SVG_NS, 'path');
+  arc.setAttribute('class', 'gauge-value');
+  arc.setAttribute('d', 'M30,100 A70,70 0 0 1 170,100');
+  arc.setAttribute('fill', 'none');
+  arc.setAttribute('stroke', color);
+  arc.setAttribute('stroke-width', '8');
+  arc.setAttribute('stroke-linecap', 'round');
+  arc.setAttribute('stroke-dasharray', '0 283');
+  svg.appendChild(arc);
 
-  // Confidence ring
-  const ring = createSVGElement(SVG_NS, 'circle', {
-    class: 'gauge-ring',
-    cx: '100',
-    cy: '100',
-    r: '60',
-    fill: 'none',
-    stroke: '#f5f5f5',
-    'stroke-width': '1',
-    opacity: '0.6',
-  });
+  // Needle (slim, centered)
+  const needle = document.createElementNS(SVG_NS, 'line');
+  needle.setAttribute('class', 'gauge-needle');
+  needle.setAttribute('x1', '100');
+  needle.setAttribute('y1', '100');
+  needle.setAttribute('x2', '100');
+  needle.setAttribute('y2', '36');
+  needle.setAttribute('stroke', '#333');
+  needle.setAttribute('stroke-width', '3');
+  needle.setAttribute('stroke-linecap', 'round');
+  needle.setAttribute('transform', 'rotate(-105,100,100)');
+  svg.appendChild(needle);
 
-  // Fill arc
-  const fillPath = createSVGElement(SVG_NS, 'path', {
-    class: 'gauge-fill',
-    d: 'M10 100 A90 90 0 0 1 190 100',
-    fill: 'none',
-    'stroke-width': '20',
-    'stroke-dasharray': '0 283',
-    'stroke-linecap': 'round',
-  });
-
-  // Needle
-  const needle = createSVGElement(SVG_NS, 'line', {
-    class: 'needle',
-    x1: '100',
-    y1: '100',
-    x2: '100',
-    y2: '20',
-    stroke: '#5a4a42',
-    'stroke-width':  '4',
-    'stroke-linecap': 'round',
-    transform: 'rotate(-90,100,100)',
-  });
-
-  // Pivot center
-  const pivot = createSVGElement(SVG_NS, 'circle', {
-    class: 'gauge-pivot',
-    cx: '100',
-    cy: '100',
-    r: '8',
-    fill: '#333',
-  });
-
-  // Arc endpoint
-  const endCircle = createSVGElement(SVG_NS, 'circle', {
-    class: 'arc-end',
-    r: '5',
-    fill: 'transparent',
-  });
-
-  // Assemble
-  [bgPath, ring, fillPath, needle, pivot, endCircle]. forEach(el => svg.appendChild(el));
+  // Center circle (unifies the design, hides line joins)
+  const center = document.createElementNS(SVG_NS, 'circle');
+  center.setAttribute('class', 'gauge-center');
+  center.setAttribute('cx', '100');
+  center.setAttribute('cy', '100');
+  center.setAttribute('r', '7');
+  center.setAttribute('fill', '#fff');
+  center.setAttribute('stroke', '#e0e0e0');
+  center.setAttribute('stroke-width', '2');
+  svg.appendChild(center);
 
   return svg;
-}
-
-function createTickMarks(SVG_NS) {
-  const ticks = [];
-  const tickPoints = [
-    { pos: 0, label: '0%', major: true },
-    { pos: 25, label: '25%', major: false },
-    { pos:  50, label: '50%', major: true },
-    { pos: 75, label: '75%', major: false },
-    { pos:  100, label: '100%', major: true },
-  ];
-
-  tickPoints.forEach(point => {
-    const angle = -90 + (point.pos / 100) * 180;
-    const rad = (angle * Math.PI) / 180;
-    const tickLength = point.major ? 12 : 8;
-    const innerRadius = 78;
-    const outerRadius = innerRadius + tickLength;
-
-    const x1 = 100 + innerRadius * Math.cos(rad);
-    const y1 = 100 + innerRadius * Math.sin(rad);
-    const x2 = 100 + outerRadius * Math.cos(rad);
-    const y2 = 100 + outerRadius * Math.sin(rad);
-
-    const tick = createSVGElement(SVG_NS, 'line', {
-      x1,
-      y1,
-      x2,
-      y2,
-      class: `gauge-tick ${point.major ? 'major' : ''}`,
-      stroke: point.major ? '#ccc' : '#ddd',
-      'stroke-width': point.major ? '1. 5' : '1',
-    });
-    ticks.push(tick);
-
-    if (point.major) {
-      const labelX = 100 + (innerRadius - 18) * Math.cos(rad);
-      const labelY = 100 + (innerRadius - 18) * Math.sin(rad);
-
-      const label = createSVGElement(SVG_NS, 'text', {
-        x:  labelX,
-        y: labelY,
-        class: 'gauge-tick-label',
-        'text-anchor': 'middle',
-        'font-size': '10',
-        fill: '#999',
-      });
-      label.textContent = point.label;
-      ticks.push(label);
-    }
-  });
-
-  return ticks;
 }
 
 function animateGaugeForVerdict(resultDiv, verdict) {
@@ -452,87 +316,80 @@ function animateGaugeForVerdict(resultDiv, verdict) {
     duration: CONFIG.GAUGE_ANIMATION_DURATION,
     reduceMotion,
     enableWobble: !reduceMotion,
-    debug: DEBUG,
   });
 }
 
 function animateGauge(root, confidence, color, options = {}) {
   const { duration = 1200, reduceMotion = false, enableWobble = true } = options;
-  const fill = root.querySelector('.gauge-fill');
-  const needle = root.querySelector('.needle');
+  const arc = root.querySelector('.gauge-value');
+  const needle = root. querySelector('.gauge-needle');
   const label = root.querySelector('.confidence-label');
-  const pathEl = root.querySelector('.gauge-bg');
-  const endCircle = root.querySelector('.arc-end');
+  const track = root.querySelector('.gauge-track');
   const gauge = root.querySelector('.gauge');
 
-  if (!fill || !needle || !label || !pathEl || !endCircle || ! gauge) return;
+  if (!arc || !needle || !label || !track || !gauge) return;
 
   // Cache arc length
-  if (!STATE.gaugeMetrics) {
+  if (!STATE.gaugeArcLength) {
     try {
-      STATE.gaugeMetrics = pathEl.getTotalLength();
+      STATE.gaugeArcLength = track.getTotalLength();
     } catch {
-      STATE.gaugeMetrics = 283;
+      STATE.gaugeArcLength = 283;
     }
   }
 
-  const maxArc = STATE.gaugeMetrics;
+  const totalLength = STATE.gaugeArcLength;
   const safeConfidence = Math.max(0, Math.min(100, Number(confidence) || 0));
-  const arc = (safeConfidence / 100) * maxArc;
-  const targetAngle = -90 + (safeConfidence / 100) * 180;
+  const progress = safeConfidence / 100;
+  const arcLength = totalLength * progress;
 
-  fill.setAttribute('stroke', color);
-  endCircle.setAttribute('fill', color);
+  // Needle angle:  -105° (left) to 105° (right)
+  const needleAngle = -105 + 210 * progress;
+
+  arc.setAttribute('stroke', color);
 
   if (reduceMotion) {
-    fill.setAttribute('stroke-dasharray', `${arc} ${maxArc - arc}`);
-    const pt = pathEl.getPointAtLength(arc);
-    endCircle.setAttribute('cx', pt.x);
-    endCircle.setAttribute('cy', pt.y);
-    needle.setAttribute('transform', `rotate(${targetAngle},100,100)`);
+    arc.setAttribute('stroke-dasharray', `${arcLength} ${totalLength - arcLength}`);
+    needle.setAttribute('transform', `rotate(${needleAngle},100,100)`);
     label.textContent = `Confidence: ${safeConfidence}%`;
     gauge.classList.add('complete');
     return;
   }
 
-  // Cancel previous animation
+  // Cancel previous
   if (STATE.currentRaf) {
     cancelAnimationFrame(STATE.currentRaf);
   }
 
-  gauge.classList.add('active');
+  gauge.classList.add('animating');
   let start = null;
 
   function frame(now) {
     if (!start) start = now;
     const elapsed = now - start;
-    const progress = Math.min(elapsed / duration, 1);
-    const eased = EASING.easeOutCubic(progress);
+    const rawProgress = Math.min(elapsed / duration, 1);
+    const eased = EASING. easeOutCubic(rawProgress);
 
-    const currentArc = arc * eased;
-    fill.setAttribute('stroke-dasharray', `${currentArc} ${maxArc - currentArc}`);
+    const currentArc = arcLength * eased;
+    arc.setAttribute('stroke-dasharray', `${currentArc} ${totalLength - currentArc}`);
 
-    const pt = pathEl.getPointAtLength(currentArc);
-    endCircle.setAttribute('cx', pt.x);
-    endCircle.setAttribute('cy', pt.y);
-
-    const angle = -90 + (-90 - targetAngle) * (1 - eased);
-    needle.setAttribute('transform', `rotate(${angle},100,100)`);
+    const currentAngle = -105 + 210 * eased * progress;
+    needle.setAttribute('transform', `rotate(${currentAngle},100,100)`);
 
     const currentValue = Math.round(safeConfidence * eased);
     label.textContent = `Confidence: ${currentValue}%`;
 
-    if (progress < 1) {
+    if (rawProgress < 1) {
       STATE.currentRaf = requestAnimationFrame(frame);
     } else {
-      needle.setAttribute('transform', `rotate(${targetAngle},100,100)`);
+      needle.setAttribute('transform', `rotate(${needleAngle},100,100)`);
       label.textContent = `Confidence: ${safeConfidence}%`;
-      gauge.classList.remove('active');
+      gauge.classList.remove('animating');
       gauge.classList.add('complete');
       label.classList.add('complete');
 
       if (enableWobble) {
-        animateNeedleWobble(needle, targetAngle, 2);
+        animateNeedleWobble(needle, needleAngle, 2);
       }
     }
   }
@@ -542,12 +399,12 @@ function animateGauge(root, confidence, color, options = {}) {
 
 function animateNeedleWobble(needle, baseAngle, wobbles) {
   let wobbleCount = 0;
-  const wobbleAmount = 8;
-  const wobbleDuration = 150;
+  const wobbleAmount = 6;
+  const wobbleDuration = 140;
 
   function wobble(direction) {
     const targetAngle = baseAngle + direction * wobbleAmount;
-    needle.style.transition = `transform ${wobbleDuration}ms ease-out`;
+    needle.style.transition = `transform ${wobbleDuration}ms cubic-bezier(0.6, 0, 0.4, 1)`;
     needle.setAttribute('transform', `rotate(${targetAngle},100,100)`);
 
     wobbleCount++;
@@ -563,7 +420,7 @@ function animateNeedleWobble(needle, baseAngle, wobbles) {
 }
 
 function storeResultSummary(resultDiv, parsedUrl, verdict) {
-  const summary = `Checked: ${parsedUrl. href}
+  const summary = `Checked:  ${parsedUrl. href}
 ${verdict.verdictEmoji} ${verdict.verdictText}
 Reason: ${verdict.reason}
 Confidence: ${verdict.confidence}%`;
@@ -571,7 +428,7 @@ Confidence: ${verdict.confidence}%`;
 }
 
 // ============================================
-// UI STATE HELPERS
+// UI STATE
 // ============================================
 function showLoadingState(resultDiv) {
   resultDiv.innerHTML = '';
@@ -581,7 +438,7 @@ function showLoadingState(resultDiv) {
 
 function hideActionButtons() {
   document.getElementById('copyBtn').style.display = 'none';
-  document. getElementById('shareBtn').style.display = 'none';
+  document.getElementById('shareBtn').style.display = 'none';
   document.getElementById('nativeShareBtn').style.display = 'none';
 }
 
@@ -611,11 +468,11 @@ function abortCurrentOperation() {
 }
 
 // ============================================
-// SHARE & COPY ACTIONS
+// SHARE & COPY
 // ============================================
 function copyResult() {
   const resultDiv = document.getElementById('result');
-  const summary = resultDiv?. dataset?. summary || resultDiv?. innerText || 'No result available. ';
+  const summary = resultDiv?. dataset?. summary || resultDiv?.innerText || 'No result available. ';
 
   if (! navigator.clipboard) {
     alert('Clipboard not supported.  Select and copy manually.');
@@ -625,7 +482,7 @@ function copyResult() {
   navigator.clipboard
     .writeText(summary)
     .then(() => {
-      showToast('Result copied!  Paste it anywhere.');
+      alert('Result copied!  Paste it anywhere.');
     })
     .catch(() => {
       alert('Copy failed. Select and copy manually.');
@@ -634,7 +491,7 @@ function copyResult() {
 
 function shareToWhatsApp() {
   const resultDiv = document.getElementById('result');
-  const summary = resultDiv?.dataset?. summary || resultDiv?.innerText || '';
+  const summary = resultDiv?. dataset?.summary || resultDiv?.innerText || '';
 
   if (!summary) {
     alert('No result to share.');
@@ -647,7 +504,7 @@ function shareToWhatsApp() {
 
 function shareNative() {
   const resultDiv = document.getElementById('result');
-  const summary = resultDiv?.dataset?.summary || resultDiv?.innerText || '';
+  const summary = resultDiv?.dataset?. summary || resultDiv?.innerText || '';
 
   if (!summary) {
     alert('No result to share.');
@@ -659,15 +516,15 @@ function shareNative() {
       title: 'Link Guardian Result',
       text: summary,
     }).catch(err => {
-      if (err.name !== 'AbortError') {
-        debugLog('Share error:', err);
+      if (err. name !== 'AbortError') {
+        console.log('Share error:', err);
       }
     });
   } else {
     navigator.clipboard
       .writeText(summary)
       .then(() => {
-        showToast('Sharing not supported. Result copied instead! ');
+        alert('Sharing not supported.  Result copied instead! ');
       })
       .catch(() => {
         alert('Unable to share or copy automatically.');
