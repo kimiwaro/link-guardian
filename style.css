@@ -233,22 +233,37 @@ button:active {
 }
 
 /* ============================================
-   ACTIONS CONTAINER
+   ACTIONS CONTAINER (UPDATED)
    ============================================ */
 
 .actions {
   display: flex;
   gap: 16px;
-  justify-content: center;
-  margin-top: var(--spacing-2xl);
+  justify-content:  center;
+  margin-top:  var(--spacing-2xl);
   margin-bottom: var(--spacing-3xl);
   flex-wrap: wrap;
   align-items: stretch;
 }
 
-.actions button {
+. actions button {
   flex: 1;
-  min-width: 120px;
+  min-width: 140px;  /* Increased from 120px */
+  padding: 13px 20px;  /* Added consistent padding */
+}
+
+/* Mobile:  Stack buttons vertically for better fit */
+@media (max-width: 480px) {
+  .actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .actions button {
+    width: 100%;
+    min-width: auto;
+    padding: 12px 16px;
+  }
 }
 
 /* ============================================
