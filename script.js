@@ -125,10 +125,92 @@ function checkLink() {
       reason = flags.length ? flags.join('; ') : 'Suspicious patterns detected.';
     }
 
-    // Render DOM safely (no innerHTML with user content)
-    renderResultCard(resultDiv, {
-      verdictClass, verdictEmoji, verdictText, reason, confidence
-    });
+// Build result card DOM safely and append to root (no innerHTML for SVG)
+function renderResultCard(root, { verdictClass, verdictEmoji, verdictText, reason, confidence }) {
+  // Clear root and remove any stray gauges
+  root.innerHTML = '';
+  root.className = 'result-card'; // reset classes
+  root.classList.add(verdictClass);
+
+  // Header
+  const header = document.createElement('div');
+  header.className = 'verdict-header fade-step';
+  header.textContent = `${verdictEmoji} ${verdictText}`;
+
+  // Reason
+  const reasonEl = document.createElement('div');
+  reasonEl.className = 'verdict-reason fade-step';
+  reasonEl.textContent = `Reason: ${reason}`;
+
+  // Confidence label
+  const conf = document.createElement('div');
+  conf.className = 'confidence-label fade-step';
+  conf.setAttribute('aria-live', 'polite');
+  conf.textContent = `Confidence: ${confidence}%`;
+
+  // Create SVG via DOM to avoid duplicates and ensure correct element order
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('class', 'gauge fade-step');
+  svg.setAttribute('viewBox', '0 0 200 110');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'Confidence gauge');
+
+  // Background arc (explicit class gauge-bg)
+  const bgPath = document.createElementNS(SVG_NS, 'path');
+  bgPath.setAttribute('class', 'gauge-bg');
+  bgPath.setAttribute('d', 'M10 100 A90 90 0 0 1 190 100');
+  bgPath.setAttribute('fill', 'none');
+  bgPath.setAttribute('stroke', '#eee');
+  bgPath.setAttribute('stroke-width', '20');
+
+  // Dynamic arc (gauge-fill)
+  const fillPath = document.createElementNS(SVG_NS, 'path');
+  fillPath.setAttribute('class', 'gauge-fill');
+  fillPath.setAttribute('d', 'M10 100 A90 90 0 0 1 190 100');
+  fillPath.setAttribute('fill', 'none');
+  fillPath.setAttribute('stroke-width', '20');
+  // start with zero arc
+  fillPath.setAttribute('stroke-dasharray', '0 283');
+
+  // Needle (line) - create before center cover so cover sits on top
+  const needle = document.createElementNS(SVG_NS, 'line');
+  needle.setAttribute('class', 'needle');
+  needle.setAttribute('x1', '100');
+  needle.setAttribute('y1', '100');
+  needle.setAttribute('x2', '100');
+  needle.setAttribute('y2', '20');
+  needle.setAttribute('stroke', 'brown');           // explicit stroke
+  needle.setAttribute('stroke-width', '4');         // visible width
+  needle.setAttribute('stroke-linecap', 'round');
+  needle.setAttribute('transform', 'rotate(-90,100,100)');
+
+  // Center cover (on top)
+  const cover = document.createElementNS(SVG_NS, 'circle');
+  cover.setAttribute('cx', '100');
+  cover.setAttribute('cy', '100');
+  cover.setAttribute('r', '8');
+  cover.setAttribute('fill', '#333');
+
+  // Append in order: bg, fill, needle, cover
+  svg.appendChild(bgPath);
+  svg.appendChild(fillPath);
+  svg.appendChild(needle);
+  svg.appendChild(cover);
+
+  // Append nodes to root
+  root.appendChild(header);
+  root.appendChild(reasonEl);
+  root.appendChild(conf);
+  root.appendChild(svg);
+
+  // Trigger fade-in
+  requestAnimationFrame(() => {
+    root.classList.add('show');
+    root.querySelectorAll('.fade-step').forEach(el => el.classList.add('show'));
+  });
+}
+
 
     // Focus header for screen readers
     const headerEl = resultDiv.querySelector('.verdict-header');
