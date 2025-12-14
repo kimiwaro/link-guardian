@@ -323,12 +323,13 @@ function animateGauge(root, confidence, color, options = {}) {
   if (!fill || !needle || !label || !path) return;
 
   // Dynamic path length
-  let maxArc;
-  try {
-    maxArc = path.getTotalLength();
-  } catch (e) {
-    maxArc = 283; // fallback
-  }
+   const path = root.querySelector('.gauge-bg'); // use the explicit background path
+   let maxArc;
+   try {
+     maxArc = path.getTotalLength();
+   } catch (e) {
+     maxArc = 283;
+   }
 
   const safeConfidence = Math.max(0, Math.min(100, Number(confidence) || 0));
   const arc = (safeConfidence / 100) * maxArc;
