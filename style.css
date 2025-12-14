@@ -1,28 +1,27 @@
 /* ---------------------------
-   Link Guardian — Main Styles
+   Link Guardian — Modern Styles v3.0
+   - Clean, modern gauge design
+   - Thin, proportional strokes
+   - Unified visual hierarchy
    --------------------------- */
 
-/* Theme variables for easy tuning */
-:root{
+: root {
   --bg:  #fafafa;
-  --text: #222;
-  --muted: #555;
+  --text:  #222;
+  --muted:  #555;
   --card-shadow: rgba(0,0,0,0.08);
   --safe:  #28a745;
   --fake: #dc3545;
-  --unknown: #ffc107;
+  --unknown:  #ffc107;
   --focus: #007bff;
-  --gauge-bg: #eee;
-  --gauge-stroke-width: 20;
-  --gauge-color: #007bff; /* Dynamic color for gauge fill */
-  --gauge-arc-length: 283; /* Cached value */
+  --gauge-color: #007bff;
 }
 
 /* Base layout */
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   font-size: 16px;
-  line-height: 1.5;
+  line-height:  1.5;
   max-width: 500px;
   margin: 50px auto;
   padding: 0 15px;
@@ -33,243 +32,233 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Headline / intro */
-header h1 { margin-bottom: 5px; }
-. tagline { font-size: 0.9rem; color: var(--muted); margin-bottom: 20px; }
+header h1 {
+  margin-bottom: 5px;
+  font-size:  1.8rem;
+}
 
-/* Form - stacked layout */
+. tagline {
+  font-size:  0.9rem;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+/* Form */
 form {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  margin-bottom: 15px;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+fieldset {
+  border: none;
+  padding: 0;
+  margin:  0;
 }
 
 input {
   width: 100%;
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  padding:  12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
   font-size: 0.95rem;
-  margin-bottom: 14px;
   background: white;
   color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 input:focus {
-  outline: 2px solid var(--focus);
+  outline: none;
   border-color: var(--focus);
-  box-shadow: 0 0 0 3px rgba(0,123,255,0.08);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
 /* ---------------------------
-   SVG Gauge - Enhanced
+   MODERN GAUGE DESIGN
    --------------------------- */
+
 .gauge {
   width: 220px;
   max-width: 100%;
   height: auto;
   display: block;
-  margin: 15px auto;
+  margin: 20px auto;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  overflow: visible;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12));
-  transition: filter 0.3s ease;
 }
 
-/* Smooth gauge appearance */
-.gauge. active {
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
-}
-
-/* Needle:  smooth rotation with proper origin */
-.needle {
-  transform-box: fill-box;
-  transform-origin: 100px 100px;
-  will-change: transform;
-  pointer-events: none;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  stroke:  #5a4a42;
-  stroke-width: 4;
+.gauge-track {
+  stroke:  #eaeaea;
+  stroke-width: 8;
   stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
 }
 
-/* Keep strokes crisp */
-.gauge path,
-.gauge line,
-.gauge circle {
-  shape-rendering: geometricPrecision;
-  vector-effect: non-scaling-stroke;
-}
-
-/* Arc fill:  use custom property for color + mask for smooth animation */
-.gauge-fill {
+.gauge-value {
+  fill: none;
   stroke: var(--gauge-color);
-  stroke-width: var(--gauge-stroke-width);
+  stroke-width: 8;
   stroke-linecap: round;
   stroke-linejoin: round;
-  fill: none;
-  /* Use stroke-dashoffset for smoother animation than dasharray */
-  stroke-dashoffset: 0;
-  transition: stroke 0.3s ease;
+  transition: stroke-dasharray 0.8s cubic-bezier(0.6, 0, 0.4, 1),
+              stroke 0.3s ease;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.08));
 }
 
-/* Background arc */
-.gauge-bg {
-  stroke: var(--gauge-bg);
-  stroke-width: var(--gauge-stroke-width);
+.gauge.animating . gauge-value {
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.12));
+}
+
+.gauge-needle {
+  stroke: #333;
+  stroke-width:  3;
   stroke-linecap: round;
-  fill: none;
+  transition: transform 0.8s cubic-bezier(0.6, 0, 0.4, 1);
+  transform-origin: 100px 100px;
+  transform-box: fill-box;
+  will-change: transform;
 }
 
-/* Tick marks for reference */
-.gauge-tick {
-  stroke: #ddd;
-  stroke-width:  1;
-  vector-effect: non-scaling-stroke;
-}
-
-. gauge-tick. major {
-  stroke:  #ccc;
-  stroke-width:  1.5;
-}
-
-/* Tick labels for accessibility */
-.gauge-tick-label {
-  font-size: 10px;
-  fill: #999;
-  text-anchor: middle;
+.gauge-center {
+  fill: #fff;
+  stroke: #e0e0e0;
+  stroke-width: 2;
   pointer-events: none;
+  transition: fill 0.3s ease, stroke 0.3s ease;
 }
 
-/* Endpoint marker:  smooth color transition */
-.arc-end {
-  fill: var(--gauge-color);
-  stroke: none;
-  pointer-events: none;
-  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15));
-  transition: fill 0.3s ease;
-}
-
-/* Center pivot point */
-.gauge-pivot {
-  fill: #333;
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
-}
-
-/* Confidence ring (subtle background reference) */
-.gauge-ring {
-  stroke: #f5f5f5;
-  stroke-width: 1;
-  fill: none;
-  opacity: 0.6;
-}
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .gauge {
-    filter: none;
-  }
-  . gauge-fill {
-    transition: stroke 0.2s linear;
-  }
-  .needle {
-    transition: none;
-  }
-  .arc-end {
-    transition: none;
-  }
+.gauge. complete . gauge-center {
+  fill:  #f5f5f5;
 }
 
 /* ---------------------------
-   Confidence label & effects
+   CONFIDENCE LABEL
    --------------------------- */
+
 .confidence-label {
   font-size: 0.95rem;
   font-weight: 700;
-  margin-top: 6px;
+  margin-top: 8px;
   text-align: center;
   color: var(--gauge-color);
-  transition: color 0.25s ease;
+  transition: color 0.3s ease;
   text-rendering: optimizeLegibility;
 }
 
-/* Subtle pulse on completion */
-@keyframes pulseSubtle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
 .confidence-label.complete {
-  animation: pulseSubtle 0.5s ease-out;
+  animation: confidencePulse 0.5s ease-out;
 }
 
-/* Minimal glow (less aggressive) */
-@keyframes glowSubtle {
-  0%, 100% { filter: drop-shadow(0 0 0 var(--gauge-color)); }
-  50% { filter: drop-shadow(0 0 4px var(--gauge-color)); }
-}
-.gauge.complete {
-  animation: glowSubtle 0.6s ease-out;
+@keyframes confidencePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
 }
 
-@media (prefers-reduced-motion:  reduce) {
-  .confidence-label. complete,
-  .gauge.complete {
+@media (prefers-reduced-motion: reduce) {
+  .confidence-label. complete {
     animation: none;
   }
 }
 
 /* ---------------------------
-   Verdict theming
+   VERDICT THEMING
    --------------------------- */
-. safe { 
-  background: #d4edda; 
-  color: #155724; 
+
+. result-card {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow:  0 2px 6px var(--card-shadow);
+  opacity: 0;
+  transform:  translateY(5px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.result-card.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.safe {
+  background: #d4edda;
+  color:  #155724;
   border: 1px solid #c3e6cb;
   --gauge-color: var(--safe);
 }
 
-.fake { 
-  background: #f8d7da; 
-  color:  #721c24; 
-  border:  1px solid #f5c6cb;
+.fake {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
   --gauge-color: var(--fake);
 }
 
-.unknown { 
-  background: #fff8e1; 
-  color: #5c4400; 
+.unknown {
+  background: #fff8e1;
+  color: #5c4400;
   border: 1px solid #ffe08a;
   --gauge-color:  var(--unknown);
 }
 
-.safe . confidence-label { color: var(--safe); }
-.fake .confidence-label { color: var(--fake); }
-.unknown .confidence-label { color: var(--unknown); }
+.verdict-header {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.verdict-reason {
+  font-size: 0.9rem;
+  font-weight: 400;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+/* Fade-in animation */
+. fade-step {
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.fade-step.show {
+  opacity: 1;
+  transform:  translateY(0);
+}
+
+. fade-step[data-delay="1"] { transition-delay: 0.08s; }
+.fade-step[data-delay="2"] { transition-delay: 0.16s; }
+.fade-step[data-delay="3"] { transition-delay: 0.24s; }
+.fade-step[data-delay="4"] { transition-delay: 0.32s; }
 
 /* ---------------------------
-   Buttons
+   BUTTONS
    --------------------------- */
+
 button {
   padding: 12px 20px;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
   border: none;
   font-weight: 700;
-  transition: background-color 0.18s ease, transform 0.08s ease, box-shadow 0.18s ease;
+  font-size: 0.95rem;
+  transition: background-color 0.18s ease, transform 0.08s ease,
+              box-shadow 0.18s ease;
   min-width: 120px;
   background: #fff;
   color: var(--text);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-button:hover { 
-  background-color: #f0f0f0;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+button:hover {
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 button:focus {
@@ -277,106 +266,75 @@ button:focus {
   outline-offset: 2px;
 }
 
-button:active { 
+button:active {
   transform: scale(0.97);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-/* Action buttons */
-#copyBtn { display: none; background: var(--focus); color: #fff; }
-#copyBtn: hover { background: #0056b3; }
-#shareBtn { display: none; background:  #25d366; color: #fff; }
-#shareBtn:hover { background:  #1da851; }
-#nativeShareBtn { display: none; background: #6c757d; color: #fff; }
-#nativeShareBtn:hover { background: #5a6268; }
-
-/* ---------------------------
-   Result Card
-   --------------------------- */
-#result { padding: 15px; border-radius: 5px; }
-
-.result-card {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 6px;
-  font-weight: 400;
-  text-align: left;
-  white-space: pre-line;
-  box-shadow: 0 2px 6px var(--card-shadow);
-  opacity: 0;
-  transform:  translateY(5px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+#submitBtn {
+  background: var(--focus);
+  color: #fff;
 }
 
-.result-card.show { 
-  opacity: 1; 
-  transform: translateY(0); 
+#submitBtn:hover {
+  background: #0056b3;
 }
 
-/* Fade-step reveal with staggered timing */
-.fade-step {
-  opacity: 0;
-  transform: translateY(5px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+#copyBtn {
+  display: none;
+  background: var(--focus);
+  color: #fff;
 }
 
-.fade-step.show { 
-  opacity: 1; 
-  transform: translateY(0); 
+#copyBtn:hover {
+  background: #0056b3;
 }
 
-/* Staggered delays via data attribute (set by JS) */
-.fade-step[data-delay="1"] { transition-delay: 0.08s; }
-.fade-step[data-delay="2"] { transition-delay: 0.16s; }
-.fade-step[data-delay="3"] { transition-delay: 0.24s; }
-.fade-step[data-delay="4"] { transition-delay:  0.32s; }
-
-/* Verdict states visuals */
-.safe { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-.fake { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-.unknown { background: #fff8e1; color: #5c4400; border: 1px solid #ffe08a; }
-
-. verdict-header {
-  font-size: 1.1rem;
-  font-weight:  700;
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+#shareBtn {
+  display: none;
+  background: #25d366;
+  color: #fff;
 }
 
-.verdict-reason { 
-  font-size: 0.9rem; 
-  font-weight: 400; 
-  opacity: 0.9;
+#shareBtn: hover {
+  background: #1da851;
 }
 
-/* Actions container */
-.actions {
+#nativeShareBtn {
+  display: none;
+  background: #6c757d;
+  color:  #fff;
+}
+
+#nativeShareBtn:hover {
+  background: #5a6268;
+}
+
+. actions {
   display: flex;
   gap: 10px;
   justify-content: center;
-  margin-top: 10px;
+  margin-top: 15px;
   flex-wrap: wrap;
 }
 
 /* ---------------------------
-   Loading state
+   LOADING STATE
    --------------------------- */
-. result-card.loading {
-  animation: loadingPulse 1. 5s ease-in-out infinite;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
-  background-size: 400% 100%;
-  animation:  shimmer 1.5s ease-in-out infinite;
+
+.result-card.loading {
   height: 60px;
   padding: 15px;
-  border-radius:  6px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
+  background-size: 400% 100%;
+  animation:  loadingShimmer 1.5s ease-in-out infinite;
   position: relative;
-  margin-top: 20px;
+  opacity: 1;
+  transform: none;
 }
 
-. result-card.loading::after {
-  content: "🕵️ Checking... ";
+. result-card.loading:: after {
+  content: '🕵️ Checking...';
   position: absolute;
   inset: 0;
   display: flex;
@@ -385,80 +343,89 @@ button:active {
   color: #666;
   font-size: 0.9rem;
   font-weight: 700;
-  border-radius: 6px;
 }
 
-@keyframes shimmer { 
-  0% { background-position: -400px 0; } 
-  100% { background-position: 400px 0; } 
-}
-
-@keyframes loadingPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+@keyframes loadingShimmer {
+  0% {
+    background-position:  -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
 }
 
 /* ---------------------------
-   Accessibility & Responsiveness
+   ACCESSIBILITY
    --------------------------- */
 
-/* Reduced motion:  respect user preference */
+.visually-hidden {
+  position:  absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin:  -1px;
+  overflow:  hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
-  .gauge,
-  .gauge-fill,
-  .needle,
-  .arc-end,
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .gauge-value {
+    transition: stroke 0.2s ease;
+  }
+
+  .gauge-needle {
+    transition: none;
+  }
+
   .fade-step,
-  .result-card,
-  .confidence-label,
-  button {
-    transition: none ! important;
-    animation: none !important;
+  .result-card {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------
+   RESPONSIVE
+   --------------------------- */
+
+@media (max-width: 500px) {
+  body {
+    margin: 30px auto;
+    padding: 0 10px;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
   }
 
   . gauge {
-    filter: none !important;
+    width: 200px;
   }
 
-  .needle {
-    filter: none !important;
-  }
-
-  .arc-end {
-    filter: none !important;
-  }
-}
-
-/* Mobile spacing tweak */
-@media (max-width: 400px) {
-  body { 
-    margin: 20px auto; 
-    padding: 0 10px; 
-  }
-  
-  .gauge { 
-    width: 200px; 
-  }
-  
-  button { 
-    min-width: 100px; 
-    padding: 10px 14px; 
+  button {
+    min-width: 90px;
+    padding: 10px 12px;
     font-size: 0.9rem;
   }
-  
-  . verdict-header {
-    font-size: 1rem;
-  }
 }
 
-/* Dark mode support (optional future enhancement) */
+/* Dark mode support (optional) */
 @media (prefers-color-scheme: dark) {
   : root {
     --bg: #1a1a1a;
     --text: #f0f0f0;
     --muted: #aaa;
-    --card-shadow:  rgba(0,0,0,0.4);
-    --gauge-bg: #333;
+    --card-shadow:  rgba(0, 0, 0, 0.4);
   }
 
   input {
@@ -468,7 +435,7 @@ button:active {
   }
 
   input:focus {
-    box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
   }
 
   button {
@@ -480,27 +447,20 @@ button:active {
     background-color: #3a3a3a;
   }
 
-  . gauge-tick {
-    stroke: #555;
-  }
-
-  .gauge-tick.major {
-    stroke: #666;
-  }
-
-  .gauge-tick-label {
-    fill: #777;
-  }
-
-  .gauge-ring {
+  .gauge-track {
     stroke: #333;
   }
 
-  .gauge-pivot {
-    fill: #ccc;
+  .gauge-center {
+    fill: #1a1a1a;
+    stroke: #444;
   }
+}
 
-  . gauge-pivot {
-    filter: drop-shadow(0 1px 1px rgba(255,255,255,0.1));
-  }
+footer {
+  margin-top: 30px;
+  padding-top:  20px;
+  border-top:  1px solid #e0e0e0;
+  font-size: 0.85rem;
+  color: var(--muted);
 }
