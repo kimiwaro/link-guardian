@@ -72,17 +72,20 @@ input:focus {
   margin: 15px auto;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  overflow: visible;              /* ensure needle/arc aren't clipped */
 }
 
 /* Needle stability: JS controls transform. Prevent CSS from interpolating rotation. */
 .needle {
-  /* Ensure the origin is respected in SVG across browsers */
-  transform-box: fill-box;        /* makes transform-origin reliable in SVG */
+  transform-box: fill-box;        /* reliable transform-origin in SVG */
   transform-origin: 100px 100px;
   transition: none;               /* JS sets transform; no CSS interpolation */
   will-change: transform;
   pointer-events: none;
-  backface-visibility: hidden;    /* rendering hint for smoother updates */
+  backface-visibility: hidden;    /* smoother rendering */
+  stroke: brown;                  /* fallback styling */
+  stroke-width: 4;
+  stroke-linecap: round;
 }
 
 /* Keep strokes crisp and predictable on scaling */
@@ -98,12 +101,19 @@ input:focus {
   stroke-linecap: round;
 }
 
+/* Background arc for clarity */
+.gauge-bg {
+  stroke: #eee;
+  stroke-width: 20;
+}
+
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .gauge-fill {
     transition: stroke-dasharray 0.3s linear, stroke 0.2s linear;
   }
 }
+
 
 /* ---------------------------
    Confidence label & effects
