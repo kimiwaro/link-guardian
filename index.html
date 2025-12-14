@@ -13,7 +13,7 @@
       <p class="tagline">Paste a link. Know if it’s real. Share the truth.</p>
     </header>
 
-    <!-- Form: no inline JS, submit handled in script.js -->
+    <!-- Form: submit handled in script.js -->
     <form id="checkForm" novalidate>
       <fieldset>
         <label for="urlInput" class="visually-hidden">Link to check</label>
@@ -35,10 +35,10 @@
     <div id="result" class="result-card" role="status" aria-live="polite"></div>
 
     <!-- Action buttons: explicit type=button so they don't submit the form -->
-    <div class="actions" aria-hidden="false">
-      <button id="copyBtn" type="button" onclick="copyResult()" aria-hidden="true">📋 Copy Result</button>
-      <button id="shareBtn" type="button" onclick="shareToWhatsApp()" aria-hidden="true">💬 Share to WhatsApp</button>
-      <button id="nativeShareBtn" type="button" onclick="shareNative()" aria-hidden="true">📲 Share...</button>
+    <div class="actions">
+      <button id="copyBtn" type="button">📋 Copy Result</button>
+      <button id="shareBtn" type="button">💬 Share to WhatsApp</button>
+      <button id="nativeShareBtn" type="button">📲 Share...</button>
     </div>
   </main>
 
@@ -53,10 +53,7 @@
     </div>
   </noscript>
 
-  <!-- Load script at end of body so DOM elements exist when it runs.
-       script.js should attach the submit handler:
-       document.getElementById('checkForm').addEventListener('submit', e => { e.preventDefault(); checkLink(); });
-  -->
+  <!-- Load script at end of body so DOM elements exist when it runs -->
   <script src="script.js" defer></script>
 </body>
 </html>
