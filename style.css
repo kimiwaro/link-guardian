@@ -1,33 +1,30 @@
-/* ---------------------------
-   Link Guardian — Main Styles v3.2
-   Smart Spacing & Modern Design
-   - Generous, breathing layout
-   - Clean visual hierarchy
-   - Modern proportions
-   - Refined accessibility
-   --------------------------- */
+/* Link Guardian — Main Styles v3.2 (cleaned)
+   - Fixed selector typos and spacing
+   - Consistent use of variables
+   - Removed unused/duplicated rules
+   - Ready to use with modular gauge.js
+*/
 
-/* Theme variables for easy tuning */
 :root {
-  --bg:  #fafafa;
-  --text:  #222;
+  --bg: #fafafa;
+  --text: #222;
   --muted: #555;
   --card-shadow: rgba(0, 0, 0, 0.08);
-  --safe:  #28a745;
-  --fake:  #dc3545;
+  --safe: #28a745;
+  --fake: #dc3545;
   --unknown: #ffc107;
   --focus: #007bff;
   --gauge-bg: #eee;
   --gauge-stroke-width: 8;
   --gauge-color: #007bff;
-  
+
   /* Spacing Scale */
-  --spacing-xs:  4px;
+  --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 12px;
   --spacing-lg: 16px;
   --spacing-xl: 20px;
-  --spacing-2xl:  28px;
+  --spacing-2xl: 28px;
   --spacing-3xl: 36px;
 }
 
@@ -40,13 +37,13 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.6;
   max-width: 520px;
   margin: 48px auto;
   padding: 0 20px;
-  background:  var(--bg);
+  background: var(--bg);
   color: var(--text);
   text-align: center;
   -webkit-font-smoothing: antialiased;
@@ -66,7 +63,7 @@ header h1 {
   letter-spacing: -0.5px;
 }
 
-. tagline {
+.tagline {
   font-size: 0.95rem;
   color: var(--muted);
   margin: 0;
@@ -88,7 +85,7 @@ form {
 fieldset {
   border: none;
   padding: 0;
-  margin:  0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
@@ -108,17 +105,17 @@ fieldset {
 
 input {
   width: 100%;
-  padding:  13px 16px;
+  padding: 13px 16px;
   border-radius: 7px;
-  border: 1. 5px solid #ddd;
-  font-size:  0.95rem;
+  border: 1.5px solid #ddd;
+  font-size: 0.95rem;
   background: white;
   color: var(--text);
   font-family: inherit;
   transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-input:: placeholder {
+input::placeholder {
   color: #999;
   opacity: 0.8;
 }
@@ -131,7 +128,7 @@ input:focus {
 }
 
 /* ============================================
-   BUTTONS (UPDATED)
+   BUTTONS
    ============================================ */
 
 button {
@@ -142,11 +139,10 @@ button {
   font-weight: 600;
   font-size: 0.95rem;
   letter-spacing: 0.3px;
-  /* CHANGE:  Remove background-color from transition */
-  transition: box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1), 
+  transition: box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1),
               transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 140px;
-  background:  #fff;
+  background: #fff;
   color: var(--text);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   display: inline-flex;
@@ -173,39 +169,34 @@ button:active {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-/* Submit button - SOLID BLUE, NO TRANSITION */
+/* Primary button variant */
+.btn-primary,
 #submitBtn {
-  background: var(--focus); /* #007bff - solid blue */
+  background: var(--focus);
   color: #fff;
   width: 100%;
   font-size: 1rem;
   padding: 14px 26px;
   font-weight: 700;
+  min-width: 0;
 }
 
+.btn-primary:hover,
 #submitBtn:hover {
   background: #0056b3;
   box-shadow: 0 6px 14px rgba(0, 123, 255, 0.25);
 }
 
+.btn-primary:active,
 #submitBtn:active {
   background: #0047a3;
 }
 
-/* Copy button - SOLID BLUE, NO TRANSITION */
+/* Copy button */
 #copyBtn {
   display: none;
-  background: var(--focus); /* #007bff - solid blue */
+  background: var(--focus);
   color: #fff;
-}
-
-#copyBtn:hover {
-  background: #0056b3;
-  box-shadow: 0 6px 14px rgba(0, 123, 255, 0.25);
-}
-
-#copyBtn:active {
-  background: #0047a3;
 }
 
 /* Share to WhatsApp button */
@@ -224,7 +215,7 @@ button:active {
 #nativeShareBtn {
   display: none;
   background: #6c757d;
-  color:   #fff;
+  color: #fff;
 }
 
 #nativeShareBtn:hover {
@@ -233,32 +224,32 @@ button:active {
 }
 
 /* ============================================
-   ACTIONS CONTAINER (UPDATED)
+   ACTIONS CONTAINER
    ============================================ */
 
 .actions {
   display: flex;
   gap: 16px;
-  justify-content:  center;
-  margin-top:  var(--spacing-2xl);
+  justify-content: center;
+  margin-top: var(--spacing-2xl);
   margin-bottom: var(--spacing-3xl);
   flex-wrap: wrap;
   align-items: stretch;
 }
 
-. actions button {
+.actions button {
   flex: 1;
-  min-width: 140px;  /* Increased from 120px */
-  padding: 13px 20px;  /* Added consistent padding */
+  min-width: 140px;
+  padding: 13px 20px;
 }
 
-/* Mobile:  Stack buttons vertically for better fit */
+/* Mobile: Stack buttons vertically */
 @media (max-width: 480px) {
   .actions {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .actions button {
     width: 100%;
     min-width: auto;
@@ -297,8 +288,8 @@ button:active {
 
 /* Track (background arc) */
 .gauge-track {
-  stroke:  #e8e8e8;
-  stroke-width: 8;
+  stroke: #e8e8e8;
+  stroke-width: var(--gauge-stroke-width);
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -307,15 +298,14 @@ button:active {
 .gauge-value {
   fill: none;
   stroke: var(--gauge-color);
-  stroke-width: 8;
+  stroke-width: var(--gauge-stroke-width);
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: stroke-dasharray 0.85s cubic-bezier(0.6, 0, 0.4, 1),
-              stroke 0.3s ease;
+  transition: stroke-dasharray 0.85s cubic-bezier(0.6, 0, 0.4, 1), stroke 0.3s ease;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.08));
 }
 
-.gauge. animating .gauge-value {
+.gauge.animating .gauge-value {
   filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.12));
 }
 
@@ -340,12 +330,12 @@ button:active {
   transition: fill 0.3s ease, stroke 0.3s ease;
 }
 
-. gauge. complete .gauge-center {
+.gauge.complete .gauge-center {
   fill: #f8f8f8;
   stroke: #d0d0d0;
 }
 
-/* Gauge ring (optional reference) */
+/* Optional tick and ring styles (keep if you add ticks in JS) */
 .gauge-ring {
   stroke: #f5f5f5;
   stroke-width: 1;
@@ -353,18 +343,16 @@ button:active {
   opacity: 0.6;
 }
 
-/* Tick marks */
 .gauge-tick {
   stroke: #ddd;
-  stroke-width:  1;
+  stroke-width: 1;
 }
 
-. gauge-tick. major {
-  stroke:  #ccc;
+.gauge-tick.major {
+  stroke: #ccc;
   stroke-width: 1.5;
 }
 
-/* Tick labels */
 .gauge-tick-label {
   font-size: 10px;
   fill: #999;
@@ -377,8 +365,8 @@ button:active {
   .gauge-value {
     transition: stroke 0.2s ease;
   }
-  
-  . gauge-needle {
+
+  .gauge-needle {
     transition: none;
   }
 }
@@ -400,20 +388,16 @@ button:active {
 }
 
 .confidence-label.complete {
-  animation: confidencePulse 0.5s cubic-bezier(0.34, 1. 56, 0.64, 1);
+  animation: confidencePulse 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes confidencePulse {
-  0%, 100% {
-    transform:  scale(1);
-  }
-  50% {
-    transform:  scale(1.1);
-  }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .confidence-label. complete {
+  .confidence-label.complete {
     animation: none;
   }
 }
@@ -426,7 +410,7 @@ button:active {
   border-radius: 8px;
 }
 
-. result-card {
+.result-card {
   margin-top: var(--spacing-2xl);
   padding: var(--spacing-xl);
   border-radius: 8px;
@@ -435,7 +419,7 @@ button:active {
   white-space: pre-line;
   box-shadow: 0 2px 8px var(--card-shadow);
   opacity: 0;
-  transform:  translateY(8px);
+  transform: translateY(8px);
   transition: opacity 0.4s ease, transform 0.4s ease;
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.04);
@@ -447,31 +431,34 @@ button:active {
 }
 
 /* Verdict states */
+.result-card.safe,
 .safe {
   background: #d4edda;
-  color:  #155724;
-  border:  1.5px solid #c3e6cb;
+  color: #155724;
+  border: 1.5px solid #c3e6cb;
   --gauge-color: var(--safe);
 }
 
+.result-card.fake,
 .fake {
   background: #f8d7da;
   color: #721c24;
-  border:  1.5px solid #f5c6cb;
+  border: 1.5px solid #f5c6cb;
   --gauge-color: var(--fake);
 }
 
+.result-card.unknown,
 .unknown {
   background: #fff8e1;
   color: #5c4400;
   border: 1.5px solid #ffe08a;
-  --gauge-color:  var(--unknown);
+  --gauge-color: var(--unknown);
 }
 
 /* Verdict content */
 .verdict-header {
   font-size: 1.15rem;
-  font-weight:  700;
+  font-weight: 700;
   margin-bottom: var(--spacing-md);
   display: flex;
   align-items: center;
@@ -490,7 +477,7 @@ button:active {
 }
 
 /* Fade-in animation with stagger */
-. fade-step {
+.fade-step {
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -502,21 +489,11 @@ button:active {
   transform: translateY(0);
 }
 
-.fade-step[data-delay="1"] {
-  transition-delay: 0.1s;
-}
-
-.fade-step[data-delay="2"] {
-  transition-delay: 0.18s;
-}
-
-.fade-step[data-delay="3"] {
-  transition-delay: 0.26s;
-}
-
-. fade-step[data-delay="4"] {
-  transition-delay: 0.34s;
-}
+/* Stagger delays */
+.fade-step[data-delay="1"] { transition-delay: 0.1s; }
+.fade-step[data-delay="2"] { transition-delay: 0.18s; }
+.fade-step[data-delay="3"] { transition-delay: 0.26s; }
+.fade-step[data-delay="4"] { transition-delay: 0.34s; }
 
 /* ============================================
    LOADING STATE
@@ -525,25 +502,20 @@ button:active {
 .result-card.loading {
   height: 70px;
   padding: var(--spacing-xl);
-  background: linear-gradient(
-    90deg,
-    #f0f0f0 25%,
-    #e6e6e6 37%,
-    #f0f0f0 63%
-  );
+  background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 37%, #f0f0f0 63%);
   background-size: 400% 100%;
-  animation:  loadingShimmer 1.6s ease-in-out infinite;
+  animation: loadingShimmer 1.6s ease-in-out infinite;
   position: relative;
   opacity: 1;
   transform: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  border:  1. 5px solid #e0e0e0;
+  border: 1.5px solid #e0e0e0;
 }
 
-. result-card.loading::after {
-  content: '🕵️ Checking... ';
+.result-card.loading::after {
+  content: '🕵️ Checking...';
   display: flex;
   align-items: center;
   justify-content: center;
@@ -554,12 +526,8 @@ button:active {
 }
 
 @keyframes loadingShimmer {
-  0% {
-    background-position: -400px 0;
-  }
-  100% {
-    background-position: 400px 0;
-  }
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
 }
 
 /* ============================================
@@ -586,28 +554,20 @@ footer {
     transition-duration: 0.01ms !important;
   }
 
-  .gauge-value {
-    transition: stroke 0.2s ease;
-  }
+  .gauge-value { transition: stroke 0.2s ease; }
+  .gauge-needle { transition: none; }
 
-  .gauge-needle {
-    transition: none;
-  }
-
-  .fade-step,
-  .result-card,
-  button {
+  .fade-step, .result-card, button {
     transition: none;
     opacity: 1;
     transform: none;
   }
 
-  .confidence-label. complete,
-  .gauge. complete {
+  .confidence-label.complete, .gauge.complete {
     animation: none;
   }
 
-  .loading {
+  .result-card.loading {
     animation: none;
     background: #f0f0f0;
   }
@@ -625,146 +585,51 @@ footer {
     max-width: 100%;
   }
 
-  header h1 {
-    font-size: 1.7rem;
-  }
+  header h1 { font-size: 1.7rem; }
+  .tagline { font-size: 0.9rem; }
 
-  . tagline {
-    font-size: 0.9rem;
-  }
+  .gauge { width: 220px; margin: var(--spacing-2xl) auto; }
 
-  .gauge {
-    width: 220px;
-    margin: var(--spacing-2xl) auto;
-  }
+  button { padding: 12px 20px; min-width: 100px; font-size: 0.9rem; }
+  #submitBtn { padding: 13px 20px; font-size: 0.95rem; }
 
-  button {
-    padding: 12px 20px;
-    min-width: 100px;
-    font-size: 0.9rem;
-  }
+  .actions { gap: 12px; margin-top: var(--spacing-xl); }
+  .actions button { flex: 1; min-width: auto; }
 
-  #submitBtn {
-    padding: 13px 20px;
-    font-size:  0.95rem;
-  }
+  .result-card { padding: var(--spacing-lg); margin-top: var(--spacing-xl); }
+  .verdict-header { font-size: 1.05rem; }
+  .verdict-reason { font-size: 0.85rem; margin-bottom: var(--spacing-lg); }
+  .confidence-label { font-size: 0.95rem; margin-bottom: var(--spacing-lg); }
 
-  . actions {
-    gap: 12px;
-    margin-top: var(--spacing-xl);
-  }
-
-  .actions button {
-    flex: 1;
-    min-width: auto;
-  }
-
-  .result-card {
-    padding: var(--spacing-lg);
-    margin-top: var(--spacing-xl);
-  }
-
-  .verdict-header {
-    font-size: 1.05rem;
-  }
-
-  .verdict-reason {
-    font-size: 0.85rem;
-    margin-bottom: var(--spacing-lg);
-  }
-
-  .confidence-label {
-    font-size: 0.95rem;
-    margin-bottom: var(--spacing-lg);
-  }
-
-  form {
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-2xl);
-  }
+  form { gap: var(--spacing-md); margin-bottom: var(--spacing-2xl); }
 }
 
 /* Mobile */
-@media (max-width:  420px) {
-  body {
-    margin: 28px auto;
-    padding: 0 12px;
-  }
+@media (max-width: 420px) {
+  body { margin: 28px auto; padding: 0 12px; }
 
-  header h1 {
-    font-size: 1.5rem;
-    margin-bottom: var(--spacing-xs);
-  }
+  header h1 { font-size: 1.5rem; margin-bottom: var(--spacing-xs); }
+  .tagline { font-size: 0.85rem; }
 
-  .tagline {
-    font-size:  0.85rem;
-  }
+  input { padding: 12px 14px; font-size: 16px; } /* Prevents zoom on iOS */
 
-  input {
-    padding: 12px 14px;
-    font-size:  16px; /* Prevents zoom on iOS */
-  }
+  button { padding: 11px 16px; font-size: 0.85rem; min-width: auto; }
+  #submitBtn { padding: 12px 16px; font-size: 0.9rem; }
 
-  button {
-    padding: 11px 16px;
-    font-size:  0.85rem;
-    min-width: auto;
-  }
+  .actions { gap: 10px; flex-direction: column; margin-top: var(--spacing-xl); }
+  .actions button { width: 100%; min-width: unset; }
 
-  #submitBtn {
-    padding: 12px 16px;
-    font-size:  0.9rem;
-  }
+  .gauge { width: 200px; margin: var(--spacing-xl) auto; }
 
-  .actions {
-    gap: 10px;
-    flex-direction: column;
-    margin-top: var(--spacing-xl);
-  }
+  .result-card { padding: var(--spacing-md); margin-top: var(--spacing-lg); }
+  .verdict-header { font-size: 1rem; }
+  .verdict-reason { font-size: 0.8rem; margin-bottom: var(--spacing-md); }
+  .confidence-label { font-size: 0.9rem; margin-bottom: var(--spacing-md); }
 
-  .actions button {
-    width: 100%;
-    min-width: unset;
-  }
+  header { margin-bottom: var(--spacing-xl); }
+  form { gap: var(--spacing-md); margin-bottom: var(--spacing-xl); }
 
-  . gauge {
-    width: 200px;
-    margin: var(--spacing-xl) auto;
-  }
-
-  .result-card {
-    padding: var(--spacing-md);
-    margin-top: var(--spacing-lg);
-  }
-
-  .verdict-header {
-    font-size: 1rem;
-  }
-
-  .verdict-reason {
-    font-size: 0.8rem;
-    margin-bottom:  var(--spacing-md);
-  }
-
-  .confidence-label {
-    font-size: 0.9rem;
-    margin-bottom: var(--spacing-md);
-  }
-
-  header {
-    margin-bottom: var(--spacing-xl);
-  }
-
-  form {
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-xl);
-  }
-
-  footer {
-    margin-top: var(--spacing-2xl);
-    padding-top: var(--spacing-xl);
-    font-size: 0.8rem;
-  }
+  footer { margin-top: var(--spacing-2xl); padding-top: var(--spacing-xl); font-size: 0.8rem; }
 }
 
 /* ============================================
@@ -776,13 +641,10 @@ footer {
     --bg: #0f0f0f;
     --text: #f2f2f2;
     --muted: #999;
-    --card-shadow:  rgba(0, 0, 0, 0.5);
+    --card-shadow: rgba(0, 0, 0, 0.5);
   }
 
-  body {
-    background:  var(--bg);
-    color: var(--text);
-  }
+  body { background: var(--bg); color: var(--text); }
 
   input {
     background: #1a1a1a;
@@ -790,7 +652,7 @@ footer {
     color: #f2f2f2;
   }
 
-  input: focus {
+  input:focus {
     background: #1f1f1f;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
   }
@@ -806,56 +668,36 @@ footer {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
   }
 
-  #submitBtn {
-    background: var(--focus);
-    color: #fff;
-  }
-
-  #submitBtn:hover {
-    background: #0056b3;
-    box-shadow: 0 6px 14px rgba(0, 123, 255, 0.3);
-  }
-
   .result-card {
     background: #1a1a1a;
     border-color: rgba(255, 255, 255, 0.08);
     box-shadow: 0 2px 8px var(--card-shadow);
   }
 
+  .result-card.safe,
   .safe {
     background: #0d3a1a;
     color: #a8d5ba;
     border-color: #1a4d2e;
   }
 
+  .result-card.fake,
   .fake {
     background: #3a0d0d;
     color: #e8a5a5;
-    border-color:  #5c1a1a;
+    border-color: #5c1a1a;
   }
 
+  .result-card.unknown,
   .unknown {
     background: #3a3410;
     color: #e8d5a8;
     border-color: #5c5c1a;
   }
 
-  . gauge-track {
-    stroke: #333;
-  }
+  .gauge-track { stroke: #333; }
+  .gauge-center { fill: #1a1a1a; stroke: #333; }
+  .gauge.complete .gauge-center { fill: #252525; stroke: #404040; }
 
-  .gauge-center {
-    fill: #1a1a1a;
-    stroke: #333;
-  }
-
-  .gauge. complete .gauge-center {
-    fill: #252525;
-    stroke: #404040;
-  }
-
-  footer {
-    border-top-color: #333;
-    color: var(--muted);
-  }
+  footer { border-top-color: #333; color: var(--muted); }
 }
