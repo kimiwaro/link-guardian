@@ -1,5 +1,5 @@
 
-# Link Guardian 🔒
+# Link Guardian 🛡️
 A simple tool to help you (and your family) check if a link is real or fake.  
 Paste a link, get a quick verdict, and share the result back to WhatsApp.  
 Built because too many scam links are floating around in our chats.
