@@ -1,89 +1,132 @@
-// gauge.js — standalone confidence meter
+// gauge.js — modular confidence gauge (aligned with style.css)
+// - Thin strokes via --gauge-stroke-width
+// - No endpoint dot
+// - Uses --gauge-color from result card
+// - Provides createGauge + animateGauge named exports
 
-export function createGauge(container, percentage, status) {
-  const arcLength = 251.2; // π × 80 for half circle
-  const statusColors = {
-    safe: 'var(--color-success)',
-    warning: 'var(--color-warning)',
-    danger: 'var(--color-danger)',
-  };
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const ARC_LENGTH = Math.PI * 80; // semicircle length for r=80 ≈ 251.327
 
-  // Build SVG
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(svgNS, 'svg');
+export function createGauge(container, percentage = 0, _status = 'safe') {
+  // Build SVG shell
+  const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('class', 'gauge');
   svg.setAttribute('viewBox', '0 0 200 120');
   svg.setAttribute('role', 'img');
   svg.setAttribute('aria-label', 'Confidence gauge');
 
-  // Background arc
-  const bg = document.createElementNS(svgNS, 'path');
-  bg.setAttribute('d', 'M20 100 A80 80 0 0 1 180 100');
-  bg.setAttribute('stroke', 'var(--color-neutral-200)');
-  bg.setAttribute('stroke-width', '12');
-  bg.setAttribute('fill', 'none');
-  bg.setAttribute('stroke-linecap', 'round');
+  // Optional outer ring (kept minimal; comment out if not used)
+  // const ring = document.createElementNS(SVG_NS, 'path');
+  // ring.setAttribute('class', 'gauge-ring');
+  // ring.setAttribute('d', 'M20 100 A80 80 0 0 1 180 100');
 
-  // Fill arc
-  const fill = document.createElementNS(svgNS, 'path');
-  fill.setAttribute('d', 'M20 100 A80 80 0 0 1 180 100');
-  fill.setAttribute('stroke', statusColors[status]);
-  fill.setAttribute('stroke-width', '12');
-  fill.setAttribute('fill', 'none');
-  fill.setAttribute('stroke-linecap', 'round');
-  fill.setAttribute('stroke-dasharray', arcLength);
-  fill.setAttribute('stroke-dashoffset', arcLength);
+  // Track (background arc)
+  const track = document.createElementNS(SVG_NS, 'path');
+  track.setAttribute('class', 'gauge-track');
+  track.setAttribute('d', 'M20 100 A80 80 0 0 1 180 100');
 
-  // Endpoint marker
-  const endCircle = document.createElementNS(svgNS, 'circle');
-  endCircle.setAttribute('r', '6');
-  endCircle.setAttribute('fill', statusColors[status]);
-  endCircle.setAttribute('aria-hidden', 'true');
+  // Value arc (foreground, animated)
+  const value = document.createElementNS(SVG_NS, 'path');
+  value.setAttribute('class', 'gauge-value');
+  value.setAttribute('d', 'M20 100 A80 80 0 0 1 180 100');
+  value.setAttribute('fill', 'none');
+  value.setAttribute('stroke-dasharray', ARC_LENGTH.toString());
+  value.setAttribute('stroke-dashoffset', ARC_LENGTH.toString());
 
-  // Percentage text
-  const text = document.createElementNS(svgNS, 'text');
-  text.setAttribute('x', '100');
-  text.setAttribute('y', '95');
-  text.setAttribute('text-anchor', 'middle');
-  text.setAttribute('font-size', '28');
-  text.setAttribute('font-weight', '700');
-  text.setAttribute('fill', 'var(--color-neutral-900)');
-  text.textContent = '0%';
+  // Needle (slim, centered rotation)
+  const needle = document.createElementNS(SVG_NS, 'line');
+  needle.setAttribute('class', 'gauge-needle');
+  // Pivot at center (100,100); point towards arc
+  needle.setAttribute('x1', '100');
+  needle.setAttribute('y1', '100');
+  needle.setAttribute('x2', '100');
+  needle.setAttribute('y2', '28'); // length ~72px upwards
+  // Transform origin is set via CSS (100 100)
 
-  const caption = document.createElementNS(svgNS, 'text');
-  caption.setAttribute('x', '100');
-  caption.setAttribute('y', '112');
-  caption.setAttribute('text-anchor', 'middle');
-  caption.setAttribute('font-size', '12');
-  caption.setAttribute('fill', 'var(--color-neutral-500)');
-  caption.textContent = 'Confidence';
+  // Center circle
+  const center = document.createElementNS(SVG_NS, 'circle');
+  center.setAttribute('class', 'gauge-center');
+  center.setAttribute('cx', '100');
+  center.setAttribute('cy', '100');
+  center.setAttribute('r', '10');
 
-  svg.append(bg, fill, endCircle, text, caption);
+  svg.append(track, value, needle, center);
   container.appendChild(svg);
 
-  // Animate arc
-  const offset = arcLength - (arcLength * percentage) / 100;
-  fill.style.transition = 'stroke-dashoffset 800ms cubic-bezier(0.4,0,0.2,1)';
-  fill.setAttribute('stroke-dashoffset', offset);
+  // Initial static state (no animation yet)
+  setGaugePercentage(svg, percentage, { immediate: true });
+}
 
-  // Animate endpoint
-  const angle = (percentage / 100) * Math.PI;
-  const cx = 100 + 80 * Math.cos(Math.PI - angle);
-  const cy = 100 - 80 * Math.sin(Math.PI - angle);
-  endCircle.style.transition = 'cx 800ms cubic-bezier(0.4,0,0.2,1), cy 800ms cubic-bezier(0.4,0,0.2,1)';
-  endCircle.setAttribute('cx', cx);
-  endCircle.setAttribute('cy', cy);
+export function animateGauge(root, confidence, color, options = {}) {
+  const duration = Math.max(200, options.duration ?? 1100);
+  const reduceMotion = options.reduceMotion ?? false;
 
-  // Animate number
-  let current = 0;
-  const increment = percentage / 80;
-  const interval = setInterval(() => {
-    current += increment;
-    if (current >= percentage) {
-      text.textContent = `${percentage}%`;
-      clearInterval(interval);
-    } else {
-      text.textContent = `${Math.floor(current)}%`;
-    }
-  }, 10);
+  // Allow CSS to pick color via --gauge-color set on parent card
+  if (color) {
+    root.style.setProperty('--gauge-color', color);
+  }
+
+  const svg = root.querySelector('.gauge');
+  const value = svg?.querySelector('.gauge-value');
+  const needle = svg?.querySelector('.gauge-needle');
+  const label = root.querySelector('.confidence-label');
+
+  if (!svg || !value || !needle) return;
+
+  // Add animating class for subtle shadow bump
+  svg.classList.add('animating');
+
+  // Animate arc and needle
+  setGaugePercentage(svg, confidence, { duration, reduceMotion });
+
+  // Animate numeric label if present
+  if (label && !reduceMotion) {
+    animateLabel(label, confidence, duration);
+  }
+
+  // Mark complete after animation
+  window.setTimeout(() => {
+    svg.classList.remove('animating');
+    svg.classList.add('complete');
+    if (label) label.classList.add('complete');
+  }, duration + 50);
+}
+
+/* Helpers */
+
+function setGaugePercentage(svg, percentage, { duration = 800, reduceMotion = false, immediate = false } = {}) {
+  const clamped = Math.max(0, Math.min(100, percentage));
+  const value = svg.querySelector('.gauge-value');
+  const needle = svg.querySelector('.gauge-needle');
+  if (!value || !needle) return;
+
+  const offset = ARC_LENGTH - (ARC_LENGTH * clamped) / 100;
+  if (immediate || reduceMotion) {
+    value.style.transition = 'none';
+    needle.style.transition = 'none';
+  } else {
+    value.style.transition = `stroke-dashoffset ${duration}ms cubic-bezier(0.6, 0, 0.4, 1)`;
+    needle.style.transition = `transform ${duration}ms cubic-bezier(0.6, 0, 0.4, 1)`;
+  }
+  value.setAttribute('stroke-dashoffset', String(offset));
+
+  // Map 0–100% to needle angle over the semicircle (-180° to 0° relative to upward)
+  // We rotate around center (100,100); initial points upward, so rotate negative towards left.
+  const angleDeg = -180 + (clamped / 100) * 180; // -180° (left) to 0° (up)
+  needle.style.transform = `rotate(${angleDeg}deg)`;
+}
+
+function animateLabel(labelEl, target, duration) {
+  const start = performance.now();
+  const from = 0;
+  const to = Math.round(target);
+  const ease = (t) => 1 - Math.pow(1 - t, 4); // easeOutQuart
+
+  function step(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const val = Math.round(from + (to - from) * ease(t));
+    labelEl.textContent = `Confidence: ${val}%`;
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
 }
