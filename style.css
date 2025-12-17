@@ -1,8 +1,10 @@
-/* Link Guardian — Main Styles v3.2 (cleaned)
-   - Fixed selector typos and spacing
-   - Consistent use of variables
-   - Removed unused/duplicated rules
-   - Ready to use with modular gauge.js
+/* Link Guardian — Main Styles v3.3 (Enhanced)
+   - Added gradient gauge styling
+   - Enhanced needle design with triangular shape
+   - Tick marks and percentage labels
+   - Layered center circle for depth
+   - Improved animations and glow effects
+   - Ready to use with enhanced gauge.js
 */
 
 :root {
@@ -258,7 +260,7 @@ button:active {
 }
 
 /* ============================================
-   MODERN GAUGE DESIGN
+   ENHANCED GAUGE DESIGN
    ============================================ */
 
 .gauge {
@@ -270,13 +272,13 @@ button:active {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   overflow: visible;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
   transition: filter 0.3s ease;
 }
 
 .gauge:hover,
 .gauge.animating {
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.12));
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
 }
 
 .gauge path,
@@ -288,86 +290,95 @@ button:active {
 
 /* Track (background arc) */
 .gauge-track {
-  stroke: #e8e8e8;
-  stroke-width: var(--gauge-stroke-width);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-/* Value arc (foreground, animated) */
-.gauge-value {
+  stroke: currentColor;
+  stroke-opacity: 0.15;
   fill: none;
-  stroke: var(--gauge-color);
-  stroke-width: var(--gauge-stroke-width);
+  stroke-width: var(--gauge-stroke-width, 8);
   stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: stroke-dasharray 0.85s cubic-bezier(0.6, 0, 0.4, 1), stroke 0.3s ease;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.08));
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
 }
 
+/* Value arc (foreground, animated with gradient) */
+.gauge-value {
+  stroke-width: var(--gauge-stroke-width, 8);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.6, 0, 0.4, 1);
+}
+
+/* Enhanced needle with triangular shape */
+.gauge-needle {
+  fill: #fff;
+  stroke: #333;
+  stroke-width: 0.5;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.15));
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: 100px 100px;
+}
+
+/* Enhanced center with layered circles */
+.gauge-center-group circle:first-child {
+  fill: white;
+  stroke: rgba(0, 0, 0, 0.1);
+  stroke-width: 1;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.15));
+}
+
+.gauge-center-group circle:last-child {
+  fill: var(--gauge-color, #4a90e2);
+}
+
+/* Tick marks */
+.gauge-tick {
+  stroke: currentColor;
+  stroke-opacity: 0.4;
+  pointer-events: none;
+}
+
+.gauge-tick.major {
+  stroke-width: 1.5;
+}
+
+.gauge-tick.minor {
+  stroke-width: 1;
+}
+
+/* Percentage labels */
+.gauge-label {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 10px;
+  fill: currentColor;
+  opacity: 0.6;
+  text-anchor: middle;
+  pointer-events: none;
+  font-weight: 500;
+}
+
+/* Animation states */
 .gauge.animating .gauge-value {
   filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.12));
 }
 
-/* Needle */
-.gauge-needle {
-  stroke: #2c2c2c;
-  stroke-width: 3;
-  stroke-linecap: round;
-  transition: transform 0.85s cubic-bezier(0.6, 0, 0.4, 1);
-  transform-origin: 100px 100px;
-  transform-box: fill-box;
-  will-change: transform;
-  pointer-events: none;
+.gauge.complete .gauge-value {
+  animation: gauge-pulse 1.5s ease-in-out;
 }
 
-/* Center circle */
-.gauge-center {
-  fill: #fff;
-  stroke: #e0e0e0;
-  stroke-width: 2;
-  pointer-events: none;
-  transition: fill 0.3s ease, stroke 0.3s ease;
-}
-
-.gauge.complete .gauge-center {
-  fill: #f8f8f8;
-  stroke: #d0d0d0;
-}
-
-/* Optional tick and ring styles (keep if you add ticks in JS) */
-.gauge-ring {
-  stroke: #f5f5f5;
-  stroke-width: 1;
-  fill: none;
-  opacity: 0.6;
-}
-
-.gauge-tick {
-  stroke: #ddd;
-  stroke-width: 1;
-}
-
-.gauge-tick.major {
-  stroke: #ccc;
-  stroke-width: 1.5;
-}
-
-.gauge-tick-label {
-  font-size: 10px;
-  fill: #999;
-  text-anchor: middle;
-  pointer-events: none;
+@keyframes gauge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
 }
 
 /* Respect reduced motion for gauge */
 @media (prefers-reduced-motion: reduce) {
   .gauge-value {
-    transition: stroke 0.2s ease;
+    transition: none;
   }
 
   .gauge-needle {
     transition: none;
+  }
+  
+  .gauge.complete .gauge-value {
+    animation: none;
   }
 }
 
@@ -554,8 +565,8 @@ footer {
     transition-duration: 0.01ms !important;
   }
 
-  .gauge-value { transition: stroke 0.2s ease; }
-  .gauge-needle { transition: none; }
+  .gauge-value, .gauge-needle { transition: none; }
+  .gauge.complete .gauge-value { animation: none; }
 
   .fade-step, .result-card, button {
     transition: none;
@@ -563,7 +574,7 @@ footer {
     transform: none;
   }
 
-  .confidence-label.complete, .gauge.complete {
+  .confidence-label.complete {
     animation: none;
   }
 
@@ -696,8 +707,28 @@ footer {
   }
 
   .gauge-track { stroke: #333; }
-  .gauge-center { fill: #1a1a1a; stroke: #333; }
-  .gauge.complete .gauge-center { fill: #252525; stroke: #404040; }
+  
+  .gauge-center-group circle:first-child {
+    fill: #1a1a1a;
+    stroke: #333;
+  }
+  
+  .gauge-center-group circle:last-child {
+    fill: var(--gauge-color);
+  }
+  
+  .gauge-needle {
+    fill: #fff;
+    stroke: #444;
+  }
+
+  .gauge-label {
+    fill: #aaa;
+  }
+
+  .gauge-tick {
+    stroke: #666;
+  }
 
   footer { border-top-color: #333; color: var(--muted); }
 }
